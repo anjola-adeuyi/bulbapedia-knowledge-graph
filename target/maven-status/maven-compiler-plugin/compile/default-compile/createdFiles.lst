@@ -1,0 +1,3 @@
+org/example/client/BulbapediaClient.class
+org/example/rdf/PokemonRDFGenerator.class
+org/example/App.class

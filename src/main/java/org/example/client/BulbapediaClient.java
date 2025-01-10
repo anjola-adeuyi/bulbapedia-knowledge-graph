@@ -20,7 +20,7 @@ public class BulbapediaClient {
 
     public JSONObject getPageContent(String pageTitle) throws IOException, InterruptedException {
         String url = API_ENDPOINT + "?action=parse" +
-                "&page=" + pageTitle.replace(" ", "_") +
+                "&page=" + java.net.URLEncoder.encode(pageTitle, "UTF-8") +
                 "&prop=wikitext|templates|images|links" +
                 "&format=json";
 
@@ -53,7 +53,8 @@ public class BulbapediaClient {
 
     public JSONObject getInfobox(String pageTitle) throws IOException, InterruptedException {
         JSONObject content = getPageContent(pageTitle);
-        
+        // Extract and return infobox template if it exists
+        // Implementation will need parsing logic for wiki templates
         return content;
     }
 }
