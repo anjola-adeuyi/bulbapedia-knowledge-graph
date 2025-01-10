@@ -3,7 +3,9 @@ package org.example;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.example.client.BulbapediaClient;
+import org.example.parser.WikiInfoboxParser;
 import org.json.JSONObject;
+import java.util.Map;
 
 public class App {
     private static final Logger logger = LoggerFactory.getLogger(App.class);
@@ -13,15 +15,17 @@ public class App {
         
         try {
             BulbapediaClient client = new BulbapediaClient();
-            JSONObject response = client.getPageContent("Bulbasaur");
+            WikiInfoboxParser parser = new WikiInfoboxParser();
             
-            if (response.has("parse")) {
-                JSONObject parseData = response.getJSONObject("parse");
-                logger.info("Successfully retrieved page with ID: " + parseData.get("pageid"));
-                logger.info("Page title: " + parseData.get("title"));
-            } else {
-                logger.warn("Unexpected response format: " + response.toString(2));
-            }
+            // Get data for Bulbasaur as a test
+            JSONObject response = client.getPageContent("Bulbasaur");
+            Map<String, String> pokemonInfo = parser.extractPokemonInfo(response);
+            
+            // Print extracted information
+            logger.info("Extracted Pokemon Information:");
+            pokemonInfo.forEach((key, value) -> {
+                logger.info(key + ": " + value);
+            });
             
         } catch (Exception e) {
             logger.error("Error occurred:", e);
