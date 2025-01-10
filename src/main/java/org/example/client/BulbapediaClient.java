@@ -39,7 +39,7 @@ public class BulbapediaClient {
         Map<String, String> params = Map.of(
             "action", "parse",
             "page", pageTitle,
-            "prop", "wikitext|templates|images|links",
+            "prop", "wikitext",
             "format", "json"
         );
 
