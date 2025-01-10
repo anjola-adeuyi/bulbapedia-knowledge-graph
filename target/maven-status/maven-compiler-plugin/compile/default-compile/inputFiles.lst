@@ -1,5 +1,7 @@
 /Users/anjolaoluwaadeuyi/Documents/CPS2/Master 2 (M2)/Semantic web/SW Project/bulbapedia-kg/src/main/java/org/example/client/BulbapediaClient.java
 /Users/anjolaoluwaadeuyi/Documents/CPS2/Master 2 (M2)/Semantic web/SW Project/bulbapedia-kg/src/main/java/org/example/rdf/PokemonRDFConverter.java
 /Users/anjolaoluwaadeuyi/Documents/CPS2/Master 2 (M2)/Semantic web/SW Project/bulbapedia-kg/src/main/java/org/example/rdf/PokemonRDFGenerator.java
+/Users/anjolaoluwaadeuyi/Documents/CPS2/Master 2 (M2)/Semantic web/SW Project/bulbapedia-kg/src/main/java/org/example/server/SPARQLHandler.java
+/Users/anjolaoluwaadeuyi/Documents/CPS2/Master 2 (M2)/Semantic web/SW Project/bulbapedia-kg/src/main/java/org/example/server/PokemonFusekiServer.java
 /Users/anjolaoluwaadeuyi/Documents/CPS2/Master 2 (M2)/Semantic web/SW Project/bulbapedia-kg/src/main/java/org/example/App.java
 /Users/anjolaoluwaadeuyi/Documents/CPS2/Master 2 (M2)/Semantic web/SW Project/bulbapedia-kg/src/main/java/org/example/parser/WikiInfoboxParser.java

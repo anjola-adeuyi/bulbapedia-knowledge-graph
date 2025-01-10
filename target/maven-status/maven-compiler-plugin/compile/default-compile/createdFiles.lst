@@ -1,5 +1,7 @@
 org/example/client/BulbapediaClient.class
-org/example/rdf/PokemonRDFConverter.class
 org/example/parser/WikiInfoboxParser.class
 org/example/rdf/PokemonRDFGenerator.class
 org/example/App.class
+org/example/server/PokemonFusekiServer.class
+org/example/server/SPARQLHandler.class
+org/example/rdf/PokemonRDFConverter.class

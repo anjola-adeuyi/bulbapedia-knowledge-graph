@@ -5,6 +5,8 @@ import org.slf4j.LoggerFactory;
 import org.example.client.BulbapediaClient;
 import org.example.parser.WikiInfoboxParser;
 import org.example.rdf.PokemonRDFConverter;
+import org.example.server.PokemonFusekiServer;
+import org.example.server.SPARQLHandler;
 import org.apache.jena.rdf.model.Model;
 import org.json.JSONObject;
 import java.util.Map;
@@ -14,22 +16,18 @@ public class App {
 
     public static void main(String[] args) {
         logger.info("Starting Bulbapedia Knowledge Graph Generator");
+        PokemonFusekiServer fusekiServer = null;
         
         try {
+            // Initialize components
             BulbapediaClient client = new BulbapediaClient();
             WikiInfoboxParser parser = new WikiInfoboxParser();
             PokemonRDFConverter converter = new PokemonRDFConverter();
             
-            // Get data for Bulbasaur as a test
+            // Get Bulbasaur data
             JSONObject response = client.getPageContent("Bulbasaur_(Pokémon)");
             Map<String, String> pokemonInfo = parser.extractPokemonInfo(response);
             
-            // Print extracted information
-            logger.info("Extracted Pokemon Information:");
-            pokemonInfo.forEach((key, value) -> {
-                logger.info(key + ": " + value);
-            });
-
             // Convert to RDF
             Model rdfModel = converter.convertToRDF(pokemonInfo);
             
@@ -38,12 +36,27 @@ public class App {
             converter.saveToFile(outputFile);
             logger.info("RDF data saved to " + outputFile);
             
-            // Print the model to console in Turtle format
-            logger.info("Generated RDF (Turtle format):");
-            rdfModel.write(System.out, "TURTLE");
+            // Start Fuseki server
+            fusekiServer = new PokemonFusekiServer();
+            fusekiServer.start();
+            
+            // Load data into Fuseki
+            fusekiServer.loadData(rdfModel);
+            
+            // Execute test SPARQL queries
+            SPARQLHandler sparqlHandler = new SPARQLHandler(fusekiServer.getDataset());
+            sparqlHandler.executeTestQueries();
+            
+            // Keep the server running
+            logger.info("Press Enter to stop the server...");
+            System.in.read();
             
         } catch (Exception e) {
             logger.error("Error occurred:", e);
+        } finally {
+            if (fusekiServer != null) {
+                fusekiServer.stop();
+            }
         }
     }
 }
