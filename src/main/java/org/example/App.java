@@ -4,6 +4,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.example.client.BulbapediaClient;
 import org.example.parser.WikiInfoboxParser;
+import org.example.rdf.PokemonRDFConverter;
+import org.apache.jena.rdf.model.Model;
 import org.json.JSONObject;
 import java.util.Map;
 
@@ -16,28 +18,29 @@ public class App {
         try {
             BulbapediaClient client = new BulbapediaClient();
             WikiInfoboxParser parser = new WikiInfoboxParser();
+            PokemonRDFConverter converter = new PokemonRDFConverter();
             
             // Get data for Bulbasaur as a test
             JSONObject response = client.getPageContent("Bulbasaur_(Pokémon)");
-            
-            // Debug: Print raw wikitext
-            if (response.has("parse")) {
-                JSONObject parseData = response.getJSONObject("parse");
-                String wikitext = parseData.getJSONObject("wikitext").getString("*");
-                logger.debug("Raw wikitext: \n" + wikitext.substring(0, Math.min(500, wikitext.length())));
-            }
-            
             Map<String, String> pokemonInfo = parser.extractPokemonInfo(response);
             
             // Print extracted information
             logger.info("Extracted Pokemon Information:");
-            if (pokemonInfo.isEmpty()) {
-                logger.warn("No information extracted from the page");
-            } else {
-                pokemonInfo.forEach((key, value) -> {
-                    logger.info(key + ": " + value);
-                });
-            }
+            pokemonInfo.forEach((key, value) -> {
+                logger.info(key + ": " + value);
+            });
+
+            // Convert to RDF
+            Model rdfModel = converter.convertToRDF(pokemonInfo);
+            
+            // Save to file
+            String outputFile = "pokemon.ttl";
+            converter.saveToFile(outputFile);
+            logger.info("RDF data saved to " + outputFile);
+            
+            // Print the model to console in Turtle format
+            logger.info("Generated RDF (Turtle format):");
+            rdfModel.write(System.out, "TURTLE");
             
         } catch (Exception e) {
             logger.error("Error occurred:", e);

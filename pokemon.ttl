@@ -1,0 +1,23 @@
+@prefix pokemon: <http://example.org/pokemon/> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema:  <http://schema.org/> .
+
+<http://example.org/pokemon/pokemon/0001>
+        rdf:type                     pokemon:Pokemon;
+        pokemon:baseExperienceYield  "64";
+        pokemon:catchRate            "45";
+        pokemon:category             "Seed";
+        pokemon:generation           "1";
+        pokemon:japaneseName         "フシギダネ";
+        pokemon:primaryAbility       <http://example.org/pokemon/ability/overgrow>;
+        pokemon:primaryType          "Grass";
+        pokemon:romajiName           "Fushigidane";
+        pokemon:secondaryType        "Poison";
+        schema:height                "0.7";
+        schema:identifier            "0001";
+        schema:name                  "Bulbasaur";
+        schema:weight                "6.9" .
+
+<http://example.org/pokemon/ability/overgrow>
+        rdfs:label  "Overgrow" .
