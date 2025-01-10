@@ -4,6 +4,7 @@ import org.apache.jena.fuseki.main.FusekiServer;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.sparql.core.DatasetImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,12 +18,13 @@ public class PokemonFusekiServer {
 
     public PokemonFusekiServer() {
         // Create an in-memory dataset
-        dataset = DatasetFactory.create();
+        dataset = DatasetFactory.createTxnMem();
         
         // Configure and create the server
         server = FusekiServer.create()
                 .port(PORT)
-                .add("/" + DATASET_NAME, dataset)
+                .add("/" + DATASET_NAME, dataset, true)  // true enables SPARQL endpoint
+                .enableCors(true)                        // Enable CORS for browser access
                 .build();
     }
 
@@ -30,6 +32,8 @@ public class PokemonFusekiServer {
         server.start();
         logger.info("Fuseki server started on port " + PORT);
         logger.info("SPARQL endpoint available at http://localhost:" + PORT + "/" + DATASET_NAME);
+        logger.info("SPARQL query interface available at http://localhost:" + PORT + "/" + DATASET_NAME + "/query");
+        logger.info("SPARQL update interface available at http://localhost:" + PORT + "/" + DATASET_NAME + "/update");
     }
 
     public void stop() {
