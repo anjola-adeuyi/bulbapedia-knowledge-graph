@@ -24,7 +24,8 @@ public class App {
             WikiInfoboxParser parser = new WikiInfoboxParser();
             PokemonRDFConverter converter = new PokemonRDFConverter();
             
-            // Get Bulbasaur data
+            // Get first Pokemon data
+            logger.info("Fetching Bulbasaur data...");
             JSONObject response = client.getPageContent("Bulbasaur_(Pokémon)");
             Map<String, String> pokemonInfo = parser.extractPokemonInfo(response);
             
@@ -43,11 +44,27 @@ public class App {
             // Load data into Fuseki
             fusekiServer.loadData(rdfModel);
             
-            // Execute test SPARQL queries
-            SPARQLHandler sparqlHandler = new SPARQLHandler(fusekiServer.getDataset());
-            sparqlHandler.executeTestQueries();
+            // Execute test queries
+            logger.info("\nExample SPARQL queries to try in the SPARQL interface (http://localhost:3330/dataset/query):");
+            logger.info("\n1. List all Pokemon:");
+            logger.info("PREFIX schema: <http://schema.org/>\n" +
+                       "SELECT ?name WHERE { ?s schema:name ?name }");
+            
+            logger.info("\n2. Get Pokemon details:");
+            logger.info("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
+                       "PREFIX pokemon: <http://example.org/pokemon/>\n" +
+                       "PREFIX schema: <http://schema.org/>\n" +
+                       "SELECT ?name ?type1 ?type2 ?height ?weight WHERE {\n" +
+                       "  ?pokemon rdf:type pokemon:Pokemon ;\n" +
+                       "           schema:name ?name ;\n" +
+                       "           pokemon:primaryType ?type1 ;\n" +
+                       "           schema:height ?height ;\n" +
+                       "           schema:weight ?weight .\n" +
+                       "  OPTIONAL { ?pokemon pokemon:secondaryType ?type2 }\n" +
+                       "}");
             
             // Keep the server running
+            logger.info("\nServer is running. Visit http://localhost:3330/query.html to try SPARQL queries");
             logger.info("Press Enter to stop the server...");
             System.in.read();
             
