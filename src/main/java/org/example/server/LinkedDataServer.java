@@ -92,10 +92,11 @@ public class LinkedDataServer {
             .append(".type-badge { display: inline-block; padding: 4px 8px; border-radius: 4px; color: white; margin-right: 5px; }")
             .append(".type-Grass { background-color: #78c850; }")
             .append(".type-Poison { background-color: #a040a0; }")
-            .append(".evolution-chain { display: flex; align-items: center; justify-content: center; margin: 20px 0; }")
+            .append(".evolution-chain { display: flex; align-items: center; justify-content: center; margin: 20px 0; background-color: #f8f9fa; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }")
             .append(".evolution-arrow { margin: 0 15px; color: #666; font-size: 20px; }")
-            .append(".pokemon-link { text-decoration: none; color: #2c3e50; padding: 8px 16px; border-radius: 4px; background: #f0f0f0; }")
-            .append(".pokemon-link:hover { background: #e0e0e0; }")
+            .append(".pokemon-link { text-decoration: none; color: #2c3e50; padding: 8px 16px; border-radius: 4px; background: #e9ecef; transition: all 0.2s ease; font-weight: 500; }")
+            .append(".pokemon-link.current { background: #3498db; color: white; }")
+            .append(".pokemon-link:not(.current):hover { background: #dee2e6; transform: translateY(-1px); }")
             .append("</style></head><body>");
 
         // Execute SPARQL query to get Pokemon details
@@ -168,16 +169,18 @@ public class LinkedDataServer {
             "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
             "PREFIX schema: <http://schema.org/>\n" +
             "PREFIX pokemon: <http://example.org/pokemon/>\n" +
-            "SELECT ?prevPokemon ?prevName ?nextPokemon ?nextName " +
-            "WHERE { " +
-            "  OPTIONAL { " +
-            "    <http://example.org/pokemon/pokemon/%s> pokemon:evolvesFrom ?prevPokemon . " +
-            "    ?prevPokemon schema:name ?prevName " +
-            "  } " +
-            "  OPTIONAL { " +
-            "    ?nextPokemon pokemon:evolvesFrom <http://example.org/pokemon/pokemon/%s> ; " +
-            "                 schema:name ?nextName " +
-            "  } " +
+            "SELECT ?prevId ?prevName ?nextId ?nextName\n" +
+            "WHERE {\n" +
+            "  OPTIONAL {\n" +
+            "    <http://example.org/pokemon/pokemon/%s> pokemon:evolvesFrom ?prev .\n" +
+            "    ?prev schema:identifier ?prevId ;\n" +
+            "          schema:name ?prevName .\n" +
+            "  }\n" +
+            "  OPTIONAL {\n" +
+            "    ?next pokemon:evolvesFrom <http://example.org/pokemon/pokemon/%s> ;\n" +
+            "          schema:identifier ?nextId ;\n" +
+            "          schema:name ?nextName .\n" +
+            "  }\n" +
             "}", id, id);
 
         html.append("<div class='info-section'>")
@@ -190,29 +193,32 @@ public class LinkedDataServer {
             if (results.hasNext()) {
                 QuerySolution soln = results.next();
                 
-                if (soln.contains("prevPokemon")) {
-                    String prevUri = soln.getResource("prevPokemon").getURI();
-                    String prevId = prevUri.substring(prevUri.lastIndexOf("/") + 1);
+                if (soln.contains("prevId")) {
+                    String prevId = soln.getLiteral("prevId").getString();
                     String prevName = soln.getLiteral("prevName").getString();
                     html.append("<a href='/resource/").append(prevId)
-                        .append("' class='pokemon-link'>").append(prevName)
+                        .append("' class='pokemon-link'>")
+                        .append(prevName)
                         .append(" (#").append(prevId).append(")</a>")
                         .append("<span class='evolution-arrow'>→</span>");
                 }
                 
-                html.append("<span class='pokemon-link'>").append(id).append("</span>");
+                // Current Pokemon
+                html.append("<span class='pokemon-link current'>")
+                    .append("Current (#").append(id).append(")")
+                    .append("</span>");
                 
-                if (soln.contains("nextPokemon")) {
-                    String nextUri = soln.getResource("nextPokemon").getURI();
-                    String nextId = nextUri.substring(nextUri.lastIndexOf("/") + 1);
+                if (soln.contains("nextId")) {
+                    String nextId = soln.getLiteral("nextId").getString();
                     String nextName = soln.getLiteral("nextName").getString();
                     html.append("<span class='evolution-arrow'>→</span>")
                         .append("<a href='/resource/").append(nextId)
-                        .append("' class='pokemon-link'>").append(nextName)
+                        .append("' class='pokemon-link'>")
+                        .append(nextName)
                         .append(" (#").append(nextId).append(")</a>");
                 }
             } else {
-                html.append("<p>No evolution information available.</p>");
+                html.append("<p>No evolution information available</p>");
             }
             
             html.append("</div></div>");
