@@ -25,7 +25,6 @@ public class LinkedDataServer {
         Spark.port(port);
         Spark.get("/resource/:id", this::handleResourceRequest);
 
-        // Handle content negotiation
         Spark.before((request, response) -> {
             String accept = request.headers("Accept");
             if (accept != null && accept.contains("text/html")) {
@@ -42,15 +41,23 @@ public class LinkedDataServer {
         String id = request.params(":id");
         String resourceUri = "http://example.org/pokemon/pokemon/" + id;
 
-        // Query to get resource description with proper prefix definitions
-        String queryStr = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
-                         "PREFIX pokemon: <http://example.org/pokemon/>\n" +
-                         "PREFIX schema: <http://schema.org/>\n" +
-                         "CONSTRUCT { ?s ?p ?o }\n" +
-                         "WHERE { ?s ?p ?o }\n" +
-                         "VALUES ?s { <" + resourceUri + "> }";
+        String constructQuery = String.format(
+            "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
+            "PREFIX schema: <http://schema.org/>\n" +
+            "PREFIX pokemon: <http://example.org/pokemon/>\n" +
+            "CONSTRUCT {\n" +
+            "  <%s> ?p ?o .\n" +
+            "  ?s pokemon:evolvesFrom <%s> .\n" +
+            "  <%s> pokemon:evolvesFrom ?prev .\n" +
+            "} WHERE {\n" +
+            "  { <%s> ?p ?o }\n" +
+            "  UNION\n" +
+            "  { ?s pokemon:evolvesFrom <%s> }\n" +
+            "  UNION\n" +
+            "  { <%s> pokemon:evolvesFrom ?prev }\n" +
+            "}", resourceUri, resourceUri, resourceUri, resourceUri, resourceUri, resourceUri);
 
-        try (QueryExecution qexec = QueryExecutionFactory.create(queryStr, dataset)) {
+        try (QueryExecution qexec = QueryExecutionFactory.create(constructQuery, dataset)) {
             Model description = qexec.execConstruct();
 
             if (description.isEmpty()) {
@@ -85,13 +92,17 @@ public class LinkedDataServer {
             .append(".type-badge { display: inline-block; padding: 4px 8px; border-radius: 4px; color: white; margin-right: 5px; }")
             .append(".type-Grass { background-color: #78c850; }")
             .append(".type-Poison { background-color: #a040a0; }")
+            .append(".evolution-chain { display: flex; align-items: center; justify-content: center; margin: 20px 0; }")
+            .append(".evolution-arrow { margin: 0 15px; color: #666; font-size: 20px; }")
+            .append(".pokemon-link { text-decoration: none; color: #2c3e50; padding: 8px 16px; border-radius: 4px; background: #f0f0f0; }")
+            .append(".pokemon-link:hover { background: #e0e0e0; }")
             .append("</style></head><body>");
 
-        // Execute SPARQL query to get Pokemon details with proper prefix definitions
-        String queryStr = String.format(
+        // Execute SPARQL query to get Pokemon details
+        String detailsQuery = String.format(
             "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
-            "PREFIX pokemon: <http://example.org/pokemon/>\n" +
             "PREFIX schema: <http://schema.org/>\n" +
+            "PREFIX pokemon: <http://example.org/pokemon/>\n" +
             "SELECT ?name ?primaryType ?secondaryType ?category ?height ?weight ?japaneseName ?romajiName " +
             "WHERE { " +
             "  <http://example.org/pokemon/pokemon/%s> " +
@@ -105,82 +116,106 @@ public class LinkedDataServer {
             "  OPTIONAL { <http://example.org/pokemon/pokemon/%s> pokemon:secondaryType ?secondaryType } " +
             "}", id, id);
 
-        try (QueryExecution qexec = QueryExecutionFactory.create(queryStr, model)) {
+        try (QueryExecution qexec = QueryExecutionFactory.create(detailsQuery, model)) {
             ResultSet results = qexec.execSelect();
             
             if (results.hasNext()) {
                 QuerySolution soln = results.next();
-                String name = soln.getLiteral("name").getString();
-                String primaryType = soln.getLiteral("primaryType").getString();
-                String category = soln.getLiteral("category").getString();
-                
-                html.append("<div class='pokemon-card'>")
-                    .append("<h1>").append(name).append(" #").append(id).append("</h1>")
-                    .append("<div class='info-section'>")
-                    .append("<h2>Types</h2>")
-                    .append("<span class='type-badge type-").append(primaryType).append("'>").append(primaryType).append("</span>");
-                
-                if (soln.contains("secondaryType")) {
-                    String secondaryType = soln.getLiteral("secondaryType").getString();
-                    html.append("<span class='type-badge type-").append(secondaryType).append("'>").append(secondaryType).append("</span>");
-                }
-                
-                html.append("</div><div class='info-section'>")
-                    .append("<h2>Details</h2>")
-                    .append("<table>")
-                    .append("<tr><th>Category</th><td>").append(category).append(" Pokémon</td></tr>")
-                    .append("<tr><th>Height</th><td>").append(soln.getLiteral("height").getString()).append(" m</td></tr>")
-                    .append("<tr><th>Weight</th><td>").append(soln.getLiteral("weight").getString()).append(" kg</td></tr>")
-                    .append("</table></div>")
-                    .append("<div class='info-section'>")
-                    .append("<h2>Names</h2>")
-                    .append("<table>")
-                    .append("<tr><th>English</th><td>").append(name).append("</td></tr>")
-                    .append("<tr><th>Japanese</th><td>").append(soln.getLiteral("japaneseName").getString()).append("</td></tr>")
-                    .append("<tr><th>Rōmaji</th><td>").append(soln.getLiteral("romajiName").getString()).append("</td></tr>")
-                    .append("</table></div>");
-
-                addEvolutionChain(html, model, id);
+                addPokemonDetails(html, soln, id);
             }
-        }
 
-        html.append("</div></body></html>");
-        return html.toString();
+            addEvolutionChain(html, model, id);
+
+            html.append("</div></body></html>");
+            return html.toString();
+        }
+    }
+
+    private void addPokemonDetails(StringBuilder html, QuerySolution soln, String id) {
+        String name = soln.getLiteral("name").getString();
+        String primaryType = soln.getLiteral("primaryType").getString();
+        String category = soln.getLiteral("category").getString();
+        
+        html.append("<div class='pokemon-card'>")
+            .append("<h1>").append(name).append(" #").append(id).append("</h1>")
+            .append("<div class='info-section'>")
+            .append("<h2>Types</h2>")
+            .append("<span class='type-badge type-").append(primaryType).append("'>").append(primaryType).append("</span>");
+        
+        if (soln.contains("secondaryType")) {
+            String secondaryType = soln.getLiteral("secondaryType").getString();
+            html.append("<span class='type-badge type-").append(secondaryType).append("'>").append(secondaryType).append("</span>");
+        }
+        
+        html.append("</div><div class='info-section'>")
+            .append("<h2>Details</h2>")
+            .append("<table>")
+            .append("<tr><th>Category</th><td>").append(category).append(" Pokémon</td></tr>")
+            .append("<tr><th>Height</th><td>").append(soln.getLiteral("height").getString()).append(" m</td></tr>")
+            .append("<tr><th>Weight</th><td>").append(soln.getLiteral("weight").getString()).append(" kg</td></tr>")
+            .append("</table></div>")
+            .append("<div class='info-section'>")
+            .append("<h2>Names</h2>")
+            .append("<table>")
+            .append("<tr><th>English</th><td>").append(name).append("</td></tr>")
+            .append("<tr><th>Japanese</th><td>").append(soln.getLiteral("japaneseName").getString()).append("</td></tr>")
+            .append("<tr><th>Rōmaji</th><td>").append(soln.getLiteral("romajiName").getString()).append("</td></tr>")
+            .append("</table></div>");
     }
 
     private void addEvolutionChain(StringBuilder html, Model model, String id) {
-        String queryStr = String.format(
+        String evolutionQuery = String.format(
             "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
-            "PREFIX pokemon: <http://example.org/pokemon/>\n" +
             "PREFIX schema: <http://schema.org/>\n" +
-            "SELECT ?prevName ?nextName " +
+            "PREFIX pokemon: <http://example.org/pokemon/>\n" +
+            "SELECT ?prevPokemon ?prevName ?nextPokemon ?nextName " +
             "WHERE { " +
             "  OPTIONAL { " +
-            "    <http://example.org/pokemon/pokemon/%s> pokemon:evolvesFrom ?prev . " +
-            "    ?prev schema:name ?prevName " +
+            "    <http://example.org/pokemon/pokemon/%s> pokemon:evolvesFrom ?prevPokemon . " +
+            "    ?prevPokemon schema:name ?prevName " +
             "  } " +
             "  OPTIONAL { " +
-            "    ?next pokemon:evolvesFrom <http://example.org/pokemon/pokemon/%s> . " +
-            "    ?next schema:name ?nextName " +
+            "    ?nextPokemon pokemon:evolvesFrom <http://example.org/pokemon/pokemon/%s> ; " +
+            "                 schema:name ?nextName " +
             "  } " +
             "}", id, id);
 
-        try (QueryExecution qexec = QueryExecutionFactory.create(queryStr, model)) {
+        html.append("<div class='info-section'>")
+            .append("<h2>Evolution Chain</h2>")
+            .append("<div class='evolution-chain'>");
+
+        try (QueryExecution qexec = QueryExecutionFactory.create(evolutionQuery, model)) {
             ResultSet results = qexec.execSelect();
-
-            html.append("<div class='info-section'>")
-                .append("<h2>Evolution Chain</h2>");
-
+            
             if (results.hasNext()) {
                 QuerySolution soln = results.next();
-                if (soln.contains("prevName")) {
-                    html.append("<p>Evolves from: ").append(soln.getLiteral("prevName").getString()).append("</p>");
+                
+                if (soln.contains("prevPokemon")) {
+                    String prevUri = soln.getResource("prevPokemon").getURI();
+                    String prevId = prevUri.substring(prevUri.lastIndexOf("/") + 1);
+                    String prevName = soln.getLiteral("prevName").getString();
+                    html.append("<a href='/resource/").append(prevId)
+                        .append("' class='pokemon-link'>").append(prevName)
+                        .append(" (#").append(prevId).append(")</a>")
+                        .append("<span class='evolution-arrow'>→</span>");
                 }
-                if (soln.contains("nextName")) {
-                    html.append("<p>Evolves into: ").append(soln.getLiteral("nextName").getString()).append("</p>");
+                
+                html.append("<span class='pokemon-link'>").append(id).append("</span>");
+                
+                if (soln.contains("nextPokemon")) {
+                    String nextUri = soln.getResource("nextPokemon").getURI();
+                    String nextId = nextUri.substring(nextUri.lastIndexOf("/") + 1);
+                    String nextName = soln.getLiteral("nextName").getString();
+                    html.append("<span class='evolution-arrow'>→</span>")
+                        .append("<a href='/resource/").append(nextId)
+                        .append("' class='pokemon-link'>").append(nextName)
+                        .append(" (#").append(nextId).append(")</a>");
                 }
+            } else {
+                html.append("<p>No evolution information available.</p>");
             }
-            html.append("</div>");
+            
+            html.append("</div></div>");
         }
     }
 
