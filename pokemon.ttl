@@ -17,10 +17,10 @@
         pokemon:primaryType          "Grass";
         pokemon:romajiName           "Fushigisou";
         pokemon:secondaryType        "Poison";
-        schema:height                "1.0"^^xsd:double;
+        schema:height                "1"^^xsd:decimal;
         schema:identifier            "0002";
         schema:name                  "Ivysaur";
-        schema:weight                "13.0"^^xsd:double .
+        schema:weight                "13"^^xsd:decimal .
 
 <http://example.org/pokemon/pokemon/0003>
         rdf:type                     pokemon:Pokemon;
@@ -35,10 +35,10 @@
         pokemon:primaryType          "Grass";
         pokemon:romajiName           "Fushigibana";
         pokemon:secondaryType        "Poison";
-        schema:height                "2.0"^^xsd:double;
+        schema:height                "2"^^xsd:decimal;
         schema:identifier            "0003";
         schema:name                  "Venusaur";
-        schema:weight                "100.0"^^xsd:double .
+        schema:weight                "100"^^xsd:decimal .
 
 <http://example.org/pokemon/pokemon/0001>
         rdf:type                     pokemon:Pokemon;
@@ -52,10 +52,10 @@
         pokemon:primaryType          "Grass";
         pokemon:romajiName           "Fushigidane";
         pokemon:secondaryType        "Poison";
-        schema:height                "0.7"^^xsd:double;
+        schema:height                0.7;
         schema:identifier            "0001";
         schema:name                  "Bulbasaur";
-        schema:weight                "6.9"^^xsd:double .
+        schema:weight                6.9 .
 
 <http://example.org/pokemon/ability/overgrow>
         rdfs:label  "Overgrow" .

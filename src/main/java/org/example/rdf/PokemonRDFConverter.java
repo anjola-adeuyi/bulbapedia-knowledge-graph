@@ -82,10 +82,11 @@ public class PokemonRDFConverter {
     private void addDecimalProperty(Model model, Resource resource, String propertyUri, String value) {
         if (value != null && !value.isEmpty()) {
             try {
-                double numericValue = Double.parseDouble(value);
+                // Create BigDecimal to maintain decimal precision
+                java.math.BigDecimal decimalValue = new java.math.BigDecimal(value);
                 Property property = model.createProperty(propertyUri);
                 resource.addProperty(property, 
-                    model.createTypedLiteral(numericValue));
+                    ResourceFactory.createTypedLiteral(decimalValue));
             } catch (NumberFormatException e) {
                 logger.warn("Failed to parse decimal value: {} for property: {}", value, propertyUri);
             }
