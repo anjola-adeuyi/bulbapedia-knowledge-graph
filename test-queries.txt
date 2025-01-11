@@ -1,0 +1,43 @@
+# Query 1: Get Pokemon with their types and physical characteristics
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX pokemon: <http://example.org/pokemon/>
+PREFIX schema: <http://schema.org/>
+
+SELECT ?name ?primaryType ?secondaryType ?height ?weight
+WHERE {
+  ?pokemon rdf:type pokemon:Pokemon ;
+           schema:name ?name ;
+           pokemon:primaryType ?primaryType ;
+           schema:height ?height ;
+           schema:weight ?weight .
+  OPTIONAL { ?pokemon pokemon:secondaryType ?secondaryType }
+}
+ORDER BY ?name
+
+# Query 2: Pokemon abilities and their categories
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX pokemon: <http://example.org/pokemon/>
+PREFIX schema: <http://schema.org/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?pokemonName ?category ?abilityName
+WHERE {
+  ?pokemon rdf:type pokemon:Pokemon ;
+           schema:name ?pokemonName ;
+           pokemon:category ?category ;
+           pokemon:primaryAbility ?ability .
+  ?ability rdfs:label ?abilityName .
+}
+ORDER BY ?pokemonName
+
+# Query 3: Pokemon with their Japanese and Romaji names
+PREFIX schema: <http://schema.org/>
+PREFIX pokemon: <http://example.org/pokemon/>
+
+SELECT ?name ?japaneseName ?romajiName
+WHERE {
+  ?pokemon schema:name ?name ;
+           pokemon:japaneseName ?japaneseName ;
+           pokemon:romajiName ?romajiName .
+}
+ORDER BY ?name
