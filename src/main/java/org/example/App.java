@@ -3,12 +3,14 @@ package org.example;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.example.client.BulbapediaClient;
+import org.example.client.EvolutionChainFetcher;
 import org.example.parser.WikiInfoboxParser;
 import org.example.rdf.PokemonRDFConverter;
-import org.example.server.EndpointTester;
 import org.example.server.PokemonFusekiServer;
+import org.example.server.EndpointTester;
 import org.apache.jena.rdf.model.Model;
-import org.json.JSONObject;
+import org.apache.jena.rdf.model.ModelFactory;
+import java.util.List;
 import java.util.Map;
 
 public class App {
@@ -23,18 +25,25 @@ public class App {
             BulbapediaClient client = new BulbapediaClient();
             WikiInfoboxParser parser = new WikiInfoboxParser();
             PokemonRDFConverter converter = new PokemonRDFConverter();
+            EvolutionChainFetcher fetcher = new EvolutionChainFetcher(client);
             
-            // Get first Pokemon data
-            logger.info("Fetching Bulbasaur data...");
-            JSONObject response = client.getPageContent("Bulbasaur_(Pokémon)");
-            Map<String, String> pokemonInfo = parser.extractPokemonInfo(response);
+            // Create a combined model for all Pokemon
+            Model combinedModel = ModelFactory.createDefaultModel();
             
-            // Convert to RDF
-            Model rdfModel = converter.convertToRDF(pokemonInfo);
+            // Fetch the entire evolution chain
+            logger.info("Fetching Bulbasaur evolution chain data...");
+            List<Map<String, String>> evolutionChainData = fetcher.fetchEvolutionChain();
             
-            // Save to file
+            // Process each Pokemon in the chain
+            for (Map<String, String> pokemonData : evolutionChainData) {
+                Map<String, String> pokemonInfo = parser.processWikitext(pokemonData);
+                Model pokemonModel = converter.convertToRDF(pokemonInfo);
+                combinedModel.add(pokemonModel);
+            }
+            
+            // Save the combined model
             String outputFile = "pokemon.ttl";
-            converter.saveToFile(outputFile);
+            converter.saveModel(combinedModel, outputFile);
             logger.info("RDF data saved to " + outputFile);
             
             // Start Fuseki server
@@ -42,33 +51,27 @@ public class App {
             fusekiServer.start();
             
             // Load data into Fuseki
-            fusekiServer.loadData(rdfModel);
+            fusekiServer.loadData(combinedModel);
             
-            // Execute test queries
-            logger.info("\nExample SPARQL queries to try in the SPARQL interface (http://localhost:3330/dataset/query):");
-            logger.info("\n1. List all Pokemon:");
-            logger.info("PREFIX schema: <http://schema.org/>\n" +
-                       "SELECT ?name WHERE { ?s schema:name ?name }");
+            // Test the endpoints
+            EndpointTester tester = new EndpointTester("http://localhost:3330/pokemon");
+            tester.testEndpoints();
             
-            logger.info("\n2. Get Pokemon details:");
+            // Print example complex queries
+            logger.info("\nExample complex SPARQL queries to try:");
+            logger.info("\n1. Find all Pokemon in the evolution chain:");
             logger.info("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
                        "PREFIX pokemon: <http://example.org/pokemon/>\n" +
                        "PREFIX schema: <http://schema.org/>\n" +
-                       "SELECT ?name ?type1 ?type2 ?height ?weight WHERE {\n" +
+                       "SELECT ?name ?stage ?evolves_from WHERE {\n" +
                        "  ?pokemon rdf:type pokemon:Pokemon ;\n" +
                        "           schema:name ?name ;\n" +
-                       "           pokemon:primaryType ?type1 ;\n" +
-                       "           schema:height ?height ;\n" +
-                       "           schema:weight ?weight .\n" +
-                       "  OPTIONAL { ?pokemon pokemon:secondaryType ?type2 }\n" +
-                       "}");
+                       "           pokemon:evolutionStage ?stage .\n" +
+                       "  OPTIONAL { ?pokemon pokemon:evolvesFrom ?evolves_from }\n" +
+                       "} ORDER BY ?stage");
             
-            // Test the endpoints
-            EndpointTester tester = new EndpointTester("http://localhost:" + 3330 + "/pokemon");
-            tester.testEndpoints();
-
             // Keep the server running
-            logger.info("\nServer is running. Visit http://localhost:3330/query.html to try SPARQL queries");
+            logger.info("\nServer is running. Use POST requests to /pokemon/query endpoint");
             logger.info("Press Enter to stop the server...");
             System.in.read();
             

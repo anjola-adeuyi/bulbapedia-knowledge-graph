@@ -1,3 +1,4 @@
+org/example/client/EvolutionChainFetcher.class
 org/example/client/BulbapediaClient.class
 org/example/parser/WikiInfoboxParser.class
 org/example/rdf/PokemonRDFGenerator.class

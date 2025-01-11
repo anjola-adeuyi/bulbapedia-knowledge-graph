@@ -3,11 +3,48 @@
 @prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix schema:  <http://schema.org/> .
 
+<http://example.org/pokemon/pokemon/0002>
+        rdf:type                     pokemon:Pokemon;
+        pokemon:baseExperienceYield  "142";
+        pokemon:catchRate            "45";
+        pokemon:category             "Seed";
+        pokemon:evolutionStage       "2";
+        pokemon:evolvesFrom          "Bulbasaur_(Pokémon)";
+        pokemon:generation           "1";
+        pokemon:japaneseName         "フシギソウ";
+        pokemon:primaryAbility       <http://example.org/pokemon/ability/overgrow>;
+        pokemon:primaryType          "Grass";
+        pokemon:romajiName           "Fushigisou";
+        pokemon:secondaryType        "Poison";
+        schema:height                "1.0";
+        schema:identifier            "0002";
+        schema:name                  "Ivysaur";
+        schema:weight                "13.0" .
+
+<http://example.org/pokemon/pokemon/0003>
+        rdf:type                     pokemon:Pokemon;
+        pokemon:baseExperienceYield  "236";
+        pokemon:catchRate            "45";
+        pokemon:category             "Seed";
+        pokemon:evolutionStage       "3";
+        pokemon:evolvesFrom          "Ivysaur_(Pokémon)";
+        pokemon:generation           "1";
+        pokemon:japaneseName         "フシギバナ";
+        pokemon:primaryAbility       <http://example.org/pokemon/ability/overgrow>;
+        pokemon:primaryType          "Grass";
+        pokemon:romajiName           "Fushigibana";
+        pokemon:secondaryType        "Poison";
+        schema:height                "2.0";
+        schema:identifier            "0003";
+        schema:name                  "Venusaur";
+        schema:weight                "100.0" .
+
 <http://example.org/pokemon/pokemon/0001>
         rdf:type                     pokemon:Pokemon;
         pokemon:baseExperienceYield  "64";
         pokemon:catchRate            "45";
         pokemon:category             "Seed";
+        pokemon:evolutionStage       "1";
         pokemon:generation           "1";
         pokemon:japaneseName         "フシギダネ";
         pokemon:primaryAbility       <http://example.org/pokemon/ability/overgrow>;
