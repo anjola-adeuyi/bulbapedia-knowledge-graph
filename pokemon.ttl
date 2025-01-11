@@ -10,7 +10,7 @@
         pokemon:catchRate            "45"^^xsd:int;
         pokemon:category             "Seed";
         pokemon:evolutionStage       "2"^^xsd:int;
-        pokemon:evolvesFrom          "Bulbasaur_(Pokémon)";
+        pokemon:evolvesFrom          <http://example.org/pokemon/pokemon/0001>;
         pokemon:generation           "1"^^xsd:int;
         pokemon:japaneseName         "フシギソウ";
         pokemon:primaryAbility       <http://example.org/pokemon/ability/overgrow>;
@@ -28,7 +28,7 @@
         pokemon:catchRate            "45"^^xsd:int;
         pokemon:category             "Seed";
         pokemon:evolutionStage       "3"^^xsd:int;
-        pokemon:evolvesFrom          "Ivysaur_(Pokémon)";
+        pokemon:evolvesFrom          <http://example.org/pokemon/pokemon/0002>;
         pokemon:generation           "1"^^xsd:int;
         pokemon:japaneseName         "フシギバナ";
         pokemon:primaryAbility       <http://example.org/pokemon/ability/overgrow>;

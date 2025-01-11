@@ -28,7 +28,7 @@ public class PokemonRDFConverter {
 
         // Basic properties using schema.org vocabulary
         addStringProperty(model, pokemonResource, SCHEMA_URI + "name", pokemonInfo.get("name"));
-        addStringProperty(model, pokemonResource, SCHEMA_URI + "identifier", pokemonInfo.get("ndex"));
+        addStringProperty(model, pokemonResource, SCHEMA_URI + "identifier", pokemonId);
         
         // Physical characteristics with proper decimal type
         addDecimalProperty(model, pokemonResource, SCHEMA_URI + "height", pokemonInfo.get("height-m"));
@@ -45,18 +45,23 @@ public class PokemonRDFConverter {
             addStringProperty(model, pokemonResource, BASE_URI + "secondaryType", pokemonInfo.get("type2"));
         }
 
+        // Evolution chain
+        int dexNum = Integer.parseInt(pokemonId);
+        if (dexNum > 1 && dexNum <= 3) {
+            // This Pokemon evolves from the previous one
+            Resource prevPokemon = model.createResource(BASE_URI + "pokemon/" + String.format("%04d", dexNum - 1));
+            pokemonResource.addProperty(model.createProperty(BASE_URI + "evolvesFrom"), prevPokemon);
+        }
+        
+        // Evolution stage
+        if (dexNum >= 1 && dexNum <= 3) {
+            addIntegerProperty(model, pokemonResource, BASE_URI + "evolutionStage", String.valueOf(dexNum));
+        }
+
         // Game mechanics
         addIntegerProperty(model, pokemonResource, BASE_URI + "baseExperienceYield", pokemonInfo.get("expyield"));
         addIntegerProperty(model, pokemonResource, BASE_URI + "catchRate", pokemonInfo.get("catchrate"));
         addIntegerProperty(model, pokemonResource, BASE_URI + "generation", pokemonInfo.get("generation"));
-
-        // Evolution chain info
-        if (pokemonInfo.containsKey("evolutionStage")) {
-            addIntegerProperty(model, pokemonResource, BASE_URI + "evolutionStage", pokemonInfo.get("evolutionStage"));
-        }
-        if (pokemonInfo.containsKey("evolvesFrom")) {
-            addStringProperty(model, pokemonResource, BASE_URI + "evolvesFrom", pokemonInfo.get("evolvesFrom"));
-        }
 
         // Abilities
         if (pokemonInfo.containsKey("ability1")) {
@@ -82,7 +87,6 @@ public class PokemonRDFConverter {
     private void addDecimalProperty(Model model, Resource resource, String propertyUri, String value) {
         if (value != null && !value.isEmpty()) {
             try {
-                // Create BigDecimal to maintain decimal precision
                 java.math.BigDecimal decimalValue = new java.math.BigDecimal(value);
                 Property property = model.createProperty(propertyUri);
                 resource.addProperty(property, 
