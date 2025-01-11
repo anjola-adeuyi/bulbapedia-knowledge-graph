@@ -165,24 +165,42 @@ public class LinkedDataServer {
     }
 
     private void addEvolutionChain(StringBuilder html, Model model, String id) {
-        String evolutionQuery = String.format(
-            "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
+        // Get current Pokemon's name
+        String nameQuery = String.format(
             "PREFIX schema: <http://schema.org/>\n" +
             "PREFIX pokemon: <http://example.org/pokemon/>\n" +
-            "SELECT DISTINCT ?prevName ?prevId ?nextName ?nextId\n" +
+            "SELECT ?name WHERE {\n" +
+            "  <http://example.org/pokemon/pokemon/%s> schema:name ?name\n" +
+            "}", id);
+
+        String currentName = "";
+        try (QueryExecution qexec = QueryExecutionFactory.create(nameQuery, model)) {
+            ResultSet results = qexec.execSelect();
+            if (results.hasNext()) {
+                currentName = results.next().getLiteral("name").getString();
+            }
+        }
+
+        // Query for evolution chain
+        String evolutionQuery = String.format(
+            "PREFIX schema: <http://schema.org/>\n" +
+            "PREFIX pokemon: <http://example.org/pokemon/>\n" +
+            "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
+            "SELECT ?prevName ?prevId ?nextName ?nextId\n" +
             "WHERE {\n" +
-            "  BIND(<http://example.org/pokemon/pokemon/%s> AS ?current)\n" +
             "  OPTIONAL {\n" +
+            "    BIND(<http://example.org/pokemon/pokemon/%s> as ?current)\n" +
             "    ?current pokemon:evolvesFrom ?prev .\n" +
             "    ?prev schema:name ?prevName ;\n" +
             "          schema:identifier ?prevId .\n" +
             "  }\n" +
             "  OPTIONAL {\n" +
+            "    BIND(<http://example.org/pokemon/pokemon/%s> as ?current)\n" +
             "    ?next pokemon:evolvesFrom ?current ;\n" +
             "          schema:name ?nextName ;\n" +
             "          schema:identifier ?nextId .\n" +
             "  }\n" +
-            "}", id);
+            "}", id, id);
 
         html.append("<div class='info-section'>")
             .append("<h2>Evolution Chain</h2>")
@@ -193,17 +211,6 @@ public class LinkedDataServer {
             
             if (results.hasNext()) {
                 QuerySolution soln = results.next();
-                String currentName = "";
-
-                // Get current Pokemon name
-                String currentQuery = String.format(
-                    "SELECT ?name WHERE { <http://example.org/pokemon/pokemon/%s> schema:name ?name }", id);
-                try (QueryExecution qexec2 = QueryExecutionFactory.create(currentQuery, model)) {
-                    ResultSet currentResults = qexec2.execSelect();
-                    if (currentResults.hasNext()) {
-                        currentName = currentResults.next().getLiteral("name").getString();
-                    }
-                }
                 
                 // Previous evolution
                 if (soln.contains("prevId")) {
@@ -218,8 +225,8 @@ public class LinkedDataServer {
                 
                 // Current Pokemon
                 html.append("<span class='pokemon-link current'>")
-                    .append(currentName).append(" (#").append(id).append(")")
-                    .append("</span>");
+                    .append(currentName)
+                    .append(" (#").append(id).append(")</span>");
                 
                 // Next evolution
                 if (soln.contains("nextId")) {
@@ -232,7 +239,9 @@ public class LinkedDataServer {
                         .append(" (#").append(nextId).append(")</a>");
                 }
             } else {
-                html.append("<p>No evolution information available</p>");
+                html.append("<span class='pokemon-link current'>")
+                    .append(currentName)
+                    .append(" (#").append(id).append(")</span>");
             }
             
             html.append("</div></div>");
