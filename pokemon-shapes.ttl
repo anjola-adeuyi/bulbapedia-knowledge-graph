@@ -1,0 +1,29 @@
+@prefix pokemon: <http://example.org/pokemon/> .
+@prefix schema:  <http://schema.org/> .
+@prefix sh:      <http://www.w3.org/ns/shacl#> .
+@prefix shapes:  <http://example.org/pokemon/shapes/> .
+
+shapes:PokemonShape  a  sh:NodeShape;
+        sh:property     [ sh:in    ( "Normal" "Fire" "Water" "Electric" "Grass" "Ice" "Fighting" "Poison" "Ground" "Flying" "Psychic" "Bug" "Rock" "Ghost" "Dragon" "Dark" "Steel" "Fairy" );
+                          sh:path  pokemon:primaryType
+                        ];
+        sh:property     [ sh:datatype      <http://www.w3.org/2001/XMLSchema#decimal>;
+                          sh:maxInclusive  "1000.0"^^<http://www.w3.org/2001/XMLSchema#double>;
+                          sh:minInclusive  "0.1"^^<http://www.w3.org/2001/XMLSchema#double>;
+                          sh:path          schema:weight
+                        ];
+        sh:property     [ sh:datatype      <http://www.w3.org/2001/XMLSchema#decimal>;
+                          sh:maxInclusive  "25.0"^^<http://www.w3.org/2001/XMLSchema#double>;
+                          sh:minInclusive  "0.1"^^<http://www.w3.org/2001/XMLSchema#double>;
+                          sh:path          schema:height
+                        ];
+        sh:property     [ sh:minCount  "1"^^<http://www.w3.org/2001/XMLSchema#int>;
+                          sh:path      pokemon:primaryType
+                        ];
+        sh:property     [ sh:minCount  "1"^^<http://www.w3.org/2001/XMLSchema#int>;
+                          sh:path      schema:identifier
+                        ];
+        sh:property     [ sh:minCount  "1"^^<http://www.w3.org/2001/XMLSchema#int>;
+                          sh:path      schema:name
+                        ];
+        sh:targetClass  pokemon:Pokemon .

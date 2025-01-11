@@ -2,59 +2,60 @@
 @prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix schema:  <http://schema.org/> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
 
 <http://example.org/pokemon/pokemon/0002>
         rdf:type                     pokemon:Pokemon;
-        pokemon:baseExperienceYield  "142";
-        pokemon:catchRate            "45";
+        pokemon:baseExperienceYield  "142"^^xsd:int;
+        pokemon:catchRate            "45"^^xsd:int;
         pokemon:category             "Seed";
-        pokemon:evolutionStage       "2";
+        pokemon:evolutionStage       "2"^^xsd:int;
         pokemon:evolvesFrom          "Bulbasaur_(Pokémon)";
-        pokemon:generation           "1";
+        pokemon:generation           "1"^^xsd:int;
         pokemon:japaneseName         "フシギソウ";
         pokemon:primaryAbility       <http://example.org/pokemon/ability/overgrow>;
         pokemon:primaryType          "Grass";
         pokemon:romajiName           "Fushigisou";
         pokemon:secondaryType        "Poison";
-        schema:height                "1.0";
+        schema:height                "1.0"^^xsd:double;
         schema:identifier            "0002";
         schema:name                  "Ivysaur";
-        schema:weight                "13.0" .
+        schema:weight                "13.0"^^xsd:double .
 
 <http://example.org/pokemon/pokemon/0003>
         rdf:type                     pokemon:Pokemon;
-        pokemon:baseExperienceYield  "236";
-        pokemon:catchRate            "45";
+        pokemon:baseExperienceYield  "236"^^xsd:int;
+        pokemon:catchRate            "45"^^xsd:int;
         pokemon:category             "Seed";
-        pokemon:evolutionStage       "3";
+        pokemon:evolutionStage       "3"^^xsd:int;
         pokemon:evolvesFrom          "Ivysaur_(Pokémon)";
-        pokemon:generation           "1";
+        pokemon:generation           "1"^^xsd:int;
         pokemon:japaneseName         "フシギバナ";
         pokemon:primaryAbility       <http://example.org/pokemon/ability/overgrow>;
         pokemon:primaryType          "Grass";
         pokemon:romajiName           "Fushigibana";
         pokemon:secondaryType        "Poison";
-        schema:height                "2.0";
+        schema:height                "2.0"^^xsd:double;
         schema:identifier            "0003";
         schema:name                  "Venusaur";
-        schema:weight                "100.0" .
+        schema:weight                "100.0"^^xsd:double .
 
 <http://example.org/pokemon/pokemon/0001>
         rdf:type                     pokemon:Pokemon;
-        pokemon:baseExperienceYield  "64";
-        pokemon:catchRate            "45";
+        pokemon:baseExperienceYield  "64"^^xsd:int;
+        pokemon:catchRate            "45"^^xsd:int;
         pokemon:category             "Seed";
-        pokemon:evolutionStage       "1";
-        pokemon:generation           "1";
+        pokemon:evolutionStage       "1"^^xsd:int;
+        pokemon:generation           "1"^^xsd:int;
         pokemon:japaneseName         "フシギダネ";
         pokemon:primaryAbility       <http://example.org/pokemon/ability/overgrow>;
         pokemon:primaryType          "Grass";
         pokemon:romajiName           "Fushigidane";
         pokemon:secondaryType        "Poison";
-        schema:height                "0.7";
+        schema:height                "0.7"^^xsd:double;
         schema:identifier            "0001";
         schema:name                  "Bulbasaur";
-        schema:weight                "6.9" .
+        schema:weight                "6.9"^^xsd:double .
 
 <http://example.org/pokemon/ability/overgrow>
         rdfs:label  "Overgrow" .

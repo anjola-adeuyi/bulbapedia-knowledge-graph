@@ -4,6 +4,8 @@ org/example/parser/WikiInfoboxParser.class
 org/example/rdf/PokemonRDFGenerator.class
 org/example/App.class
 org/example/server/PokemonFusekiServer.class
+org/example/validation/PokemonShapes.class
 org/example/server/SPARQLHandler.class
 org/example/rdf/PokemonRDFConverter.class
+org/example/validation/RDFValidator.class
 org/example/server/EndpointTester.class

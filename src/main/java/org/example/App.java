@@ -7,6 +7,8 @@ import org.example.client.EvolutionChainFetcher;
 import org.example.parser.WikiInfoboxParser;
 import org.example.rdf.PokemonRDFConverter;
 import org.example.server.PokemonFusekiServer;
+import org.example.validation.PokemonShapes;
+import org.example.validation.RDFValidator;
 import org.example.server.EndpointTester;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -46,7 +48,16 @@ public class App {
             converter.saveModel(combinedModel, outputFile);
             logger.info("RDF data saved to " + outputFile);
             
-            // Start Fuseki server
+            // Create and save SHACL shapes
+            PokemonShapes shapes = new PokemonShapes();
+            shapes.saveShapes("pokemon-shapes.ttl");
+            
+            // Validate the RDF data
+            RDFValidator validator = new RDFValidator(shapes.createShapes());
+            boolean isValid = validator.validate(combinedModel);
+            
+            if (isValid) {
+                // Start Fuseki server
             fusekiServer = new PokemonFusekiServer();
             fusekiServer.start();
             
@@ -75,6 +86,9 @@ public class App {
             logger.info("Press Enter to stop the server...");
             System.in.read();
             
+        } else {
+            logger.error("RDF data is invalid. Please check the data and shapes.");
+        }
         } catch (Exception e) {
             logger.error("Error occurred:", e);
         } finally {
