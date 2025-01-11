@@ -169,19 +169,20 @@ public class LinkedDataServer {
             "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
             "PREFIX schema: <http://schema.org/>\n" +
             "PREFIX pokemon: <http://example.org/pokemon/>\n" +
-            "SELECT ?prevId ?prevName ?nextId ?nextName\n" +
+            "SELECT DISTINCT ?prevName ?prevId ?nextName ?nextId\n" +
             "WHERE {\n" +
+            "  BIND(<http://example.org/pokemon/pokemon/%s> AS ?current)\n" +
             "  OPTIONAL {\n" +
-            "    <http://example.org/pokemon/pokemon/%s> pokemon:evolvesFrom ?prev .\n" +
-            "    ?prev schema:identifier ?prevId ;\n" +
-            "          schema:name ?prevName .\n" +
+            "    ?current pokemon:evolvesFrom ?prev .\n" +
+            "    ?prev schema:name ?prevName ;\n" +
+            "          schema:identifier ?prevId .\n" +
             "  }\n" +
             "  OPTIONAL {\n" +
-            "    ?next pokemon:evolvesFrom <http://example.org/pokemon/pokemon/%s> ;\n" +
-            "          schema:identifier ?nextId ;\n" +
-            "          schema:name ?nextName .\n" +
+            "    ?next pokemon:evolvesFrom ?current ;\n" +
+            "          schema:name ?nextName ;\n" +
+            "          schema:identifier ?nextId .\n" +
             "  }\n" +
-            "}", id, id);
+            "}", id);
 
         html.append("<div class='info-section'>")
             .append("<h2>Evolution Chain</h2>")
@@ -192,7 +193,19 @@ public class LinkedDataServer {
             
             if (results.hasNext()) {
                 QuerySolution soln = results.next();
+                String currentName = "";
+
+                // Get current Pokemon name
+                String currentQuery = String.format(
+                    "SELECT ?name WHERE { <http://example.org/pokemon/pokemon/%s> schema:name ?name }", id);
+                try (QueryExecution qexec2 = QueryExecutionFactory.create(currentQuery, model)) {
+                    ResultSet currentResults = qexec2.execSelect();
+                    if (currentResults.hasNext()) {
+                        currentName = currentResults.next().getLiteral("name").getString();
+                    }
+                }
                 
+                // Previous evolution
                 if (soln.contains("prevId")) {
                     String prevId = soln.getLiteral("prevId").getString();
                     String prevName = soln.getLiteral("prevName").getString();
@@ -205,9 +218,10 @@ public class LinkedDataServer {
                 
                 // Current Pokemon
                 html.append("<span class='pokemon-link current'>")
-                    .append("Current (#").append(id).append(")")
+                    .append(currentName).append(" (#").append(id).append(")")
                     .append("</span>");
                 
+                // Next evolution
                 if (soln.contains("nextId")) {
                     String nextId = soln.getLiteral("nextId").getString();
                     String nextName = soln.getLiteral("nextName").getString();
