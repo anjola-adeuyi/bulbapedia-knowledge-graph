@@ -9,7 +9,7 @@
         pokemon:baseExperienceYield  "142"^^xsd:int;
         pokemon:catchRate            "45"^^xsd:int;
         pokemon:category             "Seed";
-        pokemon:evolutionStage       "2"^^xsd:int;
+        pokemon:evolutionStage       "1"^^xsd:int;
         pokemon:evolvesFrom          <http://example.org/pokemon/pokemon/0001>;
         pokemon:generation           "1"^^xsd:int;
         pokemon:japaneseName         "フシギソウ";
@@ -27,7 +27,7 @@
         pokemon:baseExperienceYield  "236"^^xsd:int;
         pokemon:catchRate            "45"^^xsd:int;
         pokemon:category             "Seed";
-        pokemon:evolutionStage       "3"^^xsd:int;
+        pokemon:evolutionStage       "2"^^xsd:int;
         pokemon:evolvesFrom          <http://example.org/pokemon/pokemon/0002>;
         pokemon:generation           "1"^^xsd:int;
         pokemon:japaneseName         "フシギバナ";
@@ -45,7 +45,6 @@
         pokemon:baseExperienceYield  "64"^^xsd:int;
         pokemon:catchRate            "45"^^xsd:int;
         pokemon:category             "Seed";
-        pokemon:evolutionStage       "1"^^xsd:int;
         pokemon:generation           "1"^^xsd:int;
         pokemon:japaneseName         "フシギダネ";
         pokemon:primaryAbility       <http://example.org/pokemon/ability/overgrow>;

@@ -45,17 +45,13 @@ public class PokemonRDFConverter {
             addStringProperty(model, pokemonResource, BASE_URI + "secondaryType", pokemonInfo.get("type2"));
         }
 
-        // Evolution chain
+        // Evolution chain info
         int dexNum = Integer.parseInt(pokemonId);
-        if (dexNum > 1 && dexNum <= 3) {
-            // This Pokemon evolves from the previous one
-            Resource prevPokemon = model.createResource(BASE_URI + "pokemon/" + String.format("%04d", dexNum - 1));
+        if (dexNum > 1) {
+            String prevNum = String.format("%04d", dexNum - 1);
+            Resource prevPokemon = model.createResource(BASE_URI + "pokemon/" + prevNum);
             pokemonResource.addProperty(model.createProperty(BASE_URI + "evolvesFrom"), prevPokemon);
-        }
-        
-        // Evolution stage
-        if (dexNum >= 1 && dexNum <= 3) {
-            addIntegerProperty(model, pokemonResource, BASE_URI + "evolutionStage", String.valueOf(dexNum));
+            addIntegerProperty(model, pokemonResource, BASE_URI + "evolutionStage", String.valueOf(dexNum - 1));
         }
 
         // Game mechanics
