@@ -37,9 +37,23 @@ public class PokemonFusekiServer {
         logger.info("Fuseki server started on port " + PORT);
         logger.info("Access the following endpoints:");
         logger.info("1. Main endpoint: http://localhost:" + PORT + "/" + DATASET_NAME);
-        logger.info("2. SPARQL Query endpoint: http://localhost:" + PORT + "/" + DATASET_NAME + "/sparql");
-        logger.info("3. Try query examples with curl:");
-        logger.info("   curl -X POST -H 'Content-Type: application/sparql-query' --data 'PREFIX schema: <http://schema.org/> SELECT ?name WHERE { ?s schema:name ?name }' http://localhost:" + PORT + "/" + DATASET_NAME + "/query");
+        logger.info("2. SPARQL Query endpoint: http://localhost:" + PORT + "/" + DATASET_NAME + "/query");
+        logger.info("\nExample queries:");
+        logger.info("1. Using curl:");
+        logger.info("curl -X POST -H 'Content-Type: application/sparql-query' \\\n" +
+                   "--data 'PREFIX schema: <http://schema.org/> \\\n" +
+                   "SELECT ?name ?type1 ?type2 WHERE { \\\n" +
+                   "  ?s schema:name ?name ; \\\n" +
+                   "     pokemon:primaryType ?type1 . \\\n" +
+                   "  OPTIONAL { ?s pokemon:secondaryType ?type2 } \\\n" +
+                   "}' \\\n" +
+                   "http://localhost:" + PORT + "/" + DATASET_NAME + "/query");
+        
+        logger.info("\n2. Using Postman:");
+        logger.info("URL: http://localhost:" + PORT + "/" + DATASET_NAME + "/query");
+        logger.info("Method: POST");
+        logger.info("Header: Content-Type: application/sparql-query");
+        logger.info("Body: Your SPARQL query");
     }
 
     public void stop() {
@@ -51,6 +65,15 @@ public class PokemonFusekiServer {
         dataset.getDefaultModel().removeAll();
         dataset.getDefaultModel().add(model);
         logger.info("Loaded {} triples into the default graph", model.size());
+        
+        // Log a sample query to test the data
+        logger.info("\nData loaded successfully. Try this query to verify:");
+        logger.info("PREFIX schema: <http://schema.org/>\n" +
+                   "PREFIX pokemon: <http://example.org/pokemon/>\n" +
+                   "SELECT * WHERE {\n" +
+                   "  ?s schema:name ?name ;\n" +
+                   "     pokemon:primaryType ?type .\n" +
+                   "} LIMIT 5");
     }
 
     public Dataset getDataset() {
