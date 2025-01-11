@@ -10,6 +10,7 @@ import org.example.server.PokemonFusekiServer;
 import org.example.validation.PokemonShapes;
 import org.example.validation.RDFValidator;
 import org.example.server.EndpointTester;
+import org.example.server.LinkedDataServer;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import java.util.List;
@@ -64,6 +65,10 @@ public class App {
             // Load data into Fuseki
             fusekiServer.loadData(combinedModel);
             
+            // Start Linked Data interface
+            LinkedDataServer ldServer = new LinkedDataServer(fusekiServer.getDataset(), 3331);
+            ldServer.start();
+            
             // Test the endpoints
             EndpointTester tester = new EndpointTester("http://localhost:3330/pokemon");
             tester.testEndpoints();
@@ -87,9 +92,10 @@ public class App {
             System.in.read();
             
         } else {
-            logger.error("RDF data is invalid. Please check the data and shapes.");
+            logger.error("RDF data is not valid. Please check the data and shapes.");
         }
-        } catch (Exception e) {
+            }
+        catch (Exception e) {
             logger.error("Error occurred:", e);
         } finally {
             if (fusekiServer != null) {
