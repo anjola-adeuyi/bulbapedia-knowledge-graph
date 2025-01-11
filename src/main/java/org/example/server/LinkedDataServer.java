@@ -165,42 +165,23 @@ public class LinkedDataServer {
     }
 
     private void addEvolutionChain(StringBuilder html, Model model, String id) {
-        // Get current Pokemon's name
-        String nameQuery = String.format(
-            "PREFIX schema: <http://schema.org/>\n" +
-            "PREFIX pokemon: <http://example.org/pokemon/>\n" +
-            "SELECT ?name WHERE {\n" +
-            "  <http://example.org/pokemon/pokemon/%s> schema:name ?name\n" +
-            "}", id);
-
-        String currentName = "";
-        try (QueryExecution qexec = QueryExecutionFactory.create(nameQuery, model)) {
-            ResultSet results = qexec.execSelect();
-            if (results.hasNext()) {
-                currentName = results.next().getLiteral("name").getString();
-            }
-        }
-
-        // Query for evolution chain
         String evolutionQuery = String.format(
             "PREFIX schema: <http://schema.org/>\n" +
             "PREFIX pokemon: <http://example.org/pokemon/>\n" +
             "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
-            "SELECT ?prevName ?prevId ?nextName ?nextId\n" +
+            "SELECT DISTINCT ?current ?currentName ?prev ?prevName ?next ?nextName\n" +
             "WHERE {\n" +
+            "  BIND(<http://example.org/pokemon/pokemon/%s> as ?current)\n" +
+            "  ?current schema:name ?currentName .\n" +
             "  OPTIONAL {\n" +
-            "    BIND(<http://example.org/pokemon/pokemon/%s> as ?current)\n" +
             "    ?current pokemon:evolvesFrom ?prev .\n" +
-            "    ?prev schema:name ?prevName ;\n" +
-            "          schema:identifier ?prevId .\n" +
+            "    ?prev schema:name ?prevName .\n" +
             "  }\n" +
             "  OPTIONAL {\n" +
-            "    BIND(<http://example.org/pokemon/pokemon/%s> as ?current)\n" +
-            "    ?next pokemon:evolvesFrom ?current ;\n" +
-            "          schema:name ?nextName ;\n" +
-            "          schema:identifier ?nextId .\n" +
+            "    ?next pokemon:evolvesFrom ?current .\n" +
+            "    ?next schema:name ?nextName .\n" +
             "  }\n" +
-            "}", id, id);
+            "}", id);
 
         html.append("<div class='info-section'>")
             .append("<h2>Evolution Chain</h2>")
@@ -211,11 +192,12 @@ public class LinkedDataServer {
             
             if (results.hasNext()) {
                 QuerySolution soln = results.next();
+                String currentName = soln.getLiteral("currentName").getString();
                 
                 // Previous evolution
-                if (soln.contains("prevId")) {
-                    String prevId = soln.getLiteral("prevId").getString();
+                if (soln.contains("prevName")) {
                     String prevName = soln.getLiteral("prevName").getString();
+                    String prevId = extractId(soln.getResource("prev").getURI());
                     html.append("<a href='/resource/").append(prevId)
                         .append("' class='pokemon-link'>")
                         .append(prevName)
@@ -229,23 +211,23 @@ public class LinkedDataServer {
                     .append(" (#").append(id).append(")</span>");
                 
                 // Next evolution
-                if (soln.contains("nextId")) {
-                    String nextId = soln.getLiteral("nextId").getString();
+                if (soln.contains("nextName")) {
                     String nextName = soln.getLiteral("nextName").getString();
+                    String nextId = extractId(soln.getResource("next").getURI());
                     html.append("<span class='evolution-arrow'>→</span>")
                         .append("<a href='/resource/").append(nextId)
                         .append("' class='pokemon-link'>")
                         .append(nextName)
                         .append(" (#").append(nextId).append(")</a>");
                 }
-            } else {
-                html.append("<span class='pokemon-link current'>")
-                    .append(currentName)
-                    .append(" (#").append(id).append(")</span>");
             }
             
             html.append("</div></div>");
         }
+    }
+
+    private String extractId(String uri) {
+        return uri.substring(uri.lastIndexOf("/") + 1);
     }
 
     public void stop() {
