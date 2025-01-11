@@ -5,3 +5,4 @@ org/example/App.class
 org/example/server/PokemonFusekiServer.class
 org/example/server/SPARQLHandler.class
 org/example/rdf/PokemonRDFConverter.class
+org/example/server/EndpointTester.class

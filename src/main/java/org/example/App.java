@@ -5,8 +5,8 @@ import org.slf4j.LoggerFactory;
 import org.example.client.BulbapediaClient;
 import org.example.parser.WikiInfoboxParser;
 import org.example.rdf.PokemonRDFConverter;
+import org.example.server.EndpointTester;
 import org.example.server.PokemonFusekiServer;
-import org.example.server.SPARQLHandler;
 import org.apache.jena.rdf.model.Model;
 import org.json.JSONObject;
 import java.util.Map;
@@ -63,6 +63,10 @@ public class App {
                        "  OPTIONAL { ?pokemon pokemon:secondaryType ?type2 }\n" +
                        "}");
             
+            // Test the endpoints
+            EndpointTester tester = new EndpointTester("http://localhost:" + 3330 + "/pokemon");
+            tester.testEndpoints();
+
             // Keep the server running
             logger.info("\nServer is running. Visit http://localhost:3330/query.html to try SPARQL queries");
             logger.info("Press Enter to stop the server...");
