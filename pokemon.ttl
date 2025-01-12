@@ -21,7 +21,10 @@
         schema:height                "1"^^xsd:decimal;
         schema:identifier            "0002";
         schema:name                  "Ivysaur";
-        schema:weight                "13"^^xsd:decimal .
+        schema:sameAs                <https://en.wikipedia.org/wiki/Ivysaur>;
+        schema:weight                "13"^^xsd:decimal;
+        <http://www.w3.org/2002/07/owl#sameAs>
+                <http://dbpedia.org/resource/Ivysaur> , <http://www.wikidata.org/entity/Q1411> .
 
 <http://example.org/pokemon/pokemon/0003>
         rdf:type                     pokemon:Pokemon;
@@ -40,7 +43,10 @@
         schema:height                "2"^^xsd:decimal;
         schema:identifier            "0003";
         schema:name                  "Venusaur";
-        schema:weight                "100"^^xsd:decimal .
+        schema:sameAs                <https://en.wikipedia.org/wiki/Venusaur>;
+        schema:weight                "100"^^xsd:decimal;
+        <http://www.w3.org/2002/07/owl#sameAs>
+                <http://www.wikidata.org/entity/Q1412> , <http://dbpedia.org/resource/Venusaur> .
 
 <http://example.org/pokemon/pokemon/0001>
         rdf:type                     pokemon:Pokemon;
@@ -57,7 +63,10 @@
         schema:height                0.7;
         schema:identifier            "0001";
         schema:name                  "Bulbasaur";
-        schema:weight                6.9 .
+        schema:sameAs                <https://en.wikipedia.org/wiki/Bulbasaur>;
+        schema:weight                6.9;
+        <http://www.w3.org/2002/07/owl#sameAs>
+                <http://dbpedia.org/resource/Bulbasaur> , <http://www.wikidata.org/entity/Q1410> .
 
 <http://example.org/pokemon/ability/overgrow>
         rdfs:label  "Overgrow" .
