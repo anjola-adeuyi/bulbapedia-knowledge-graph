@@ -56,9 +56,13 @@ public class EvolutionChainFetcher {
                     
                     // Store evolution stage in additional metadata
                     Map<String, String> metadata = new HashMap<>();
-                    metadata.put("evolutionStage", String.valueOf(i + 1));
+                    int stage = i + 1;
+                    metadata.put("evolutionStage", String.valueOf(stage));
+                    
+                    // Add evolution data
                     if (i > 0) {
-                        metadata.put("evolvesFrom", chain.get(i - 1));
+                        String prevPokemonId = String.format("%04d", Integer.parseInt(getPokemonId(chain.get(i - 1))));
+                        metadata.put("evolvesFrom", prevPokemonId);
                     }
                     
                     // Add the response to our list
@@ -79,5 +83,29 @@ public class EvolutionChainFetcher {
         }
         
         return allPokemonData;
+    }
+
+    private String getPokemonId(String pokemonName) {
+        // Extract Pokemon ID from the wikitext if available
+        try {
+            JSONObject response = client.getPageContent(pokemonName);
+            if (response.has("parse")) {
+                String wikitext = response.getJSONObject("parse")
+                                       .getJSONObject("wikitext")
+                                       .getString("*");
+                // Look for ndex parameter
+                int ndexStart = wikitext.indexOf("|ndex=");
+                if (ndexStart >= 0) {
+                    int start = ndexStart + 6;
+                    int end = wikitext.indexOf("\n", start);
+                    if (end > start) {
+                        return wikitext.substring(start, end).trim();
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.warn("Failed to get Pokemon ID from {}", pokemonName);
+        }
+        return "0000";
     }
 }

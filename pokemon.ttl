@@ -10,7 +10,7 @@
         pokemon:baseExperienceYield  "142"^^xsd:int;
         pokemon:catchRate            "45"^^xsd:int;
         pokemon:category             "Turtle";
-        pokemon:evolutionStage       "7"^^xsd:int;
+        pokemon:evolutionStage       "2"^^xsd:int;
         pokemon:evolvesFrom          <http://example.org/pokemon/pokemon/0007>;
         pokemon:generation           "1"^^xsd:int;
         pokemon:japaneseName         "カメール";
@@ -31,7 +31,7 @@
         pokemon:baseExperienceYield  "236"^^xsd:int;
         pokemon:catchRate            "45"^^xsd:int;
         pokemon:category             "Seed";
-        pokemon:evolutionStage       "2"^^xsd:int;
+        pokemon:evolutionStage       "3"^^xsd:int;
         pokemon:evolvesFrom          <http://example.org/pokemon/pokemon/0002>;
         pokemon:generation           "1"^^xsd:int;
         pokemon:japaneseName         "フシギバナ";
@@ -56,7 +56,7 @@
         pokemon:baseExperienceYield  "142"^^xsd:int;
         pokemon:catchRate            "45"^^xsd:int;
         pokemon:category             "Flame";
-        pokemon:evolutionStage       "4"^^xsd:int;
+        pokemon:evolutionStage       "2"^^xsd:int;
         pokemon:evolvesFrom          <http://example.org/pokemon/pokemon/0004>;
         pokemon:generation           "1"^^xsd:int;
         pokemon:japaneseName         "リザード";
@@ -78,8 +78,7 @@
         rdf:type                pokemon:Pokemon;
         rdfs:label              "Zenigame"@ja-Latn , "Squirtle"@en , "ゼニガメ"@ja;
         pokemon:category        "{{tt";
-        pokemon:evolutionStage  "6"^^xsd:int;
-        pokemon:evolvesFrom     <http://example.org/pokemon/pokemon/0006>;
+        pokemon:evolutionStage  "1"^^xsd:int;
         pokemon:japaneseName    "ゼニガメ";
         pokemon:primaryType     "Water";
         pokemon:romajiName      "Zenigame";
@@ -95,7 +94,7 @@
         pokemon:baseExperienceYield  "142"^^xsd:int;
         pokemon:catchRate            "45"^^xsd:int;
         pokemon:category             "Seed";
-        pokemon:evolutionStage       "1"^^xsd:int;
+        pokemon:evolutionStage       "2"^^xsd:int;
         pokemon:evolvesFrom          <http://example.org/pokemon/pokemon/0001>;
         pokemon:generation           "1"^^xsd:int;
         pokemon:japaneseName         "フシギソウ";
@@ -120,7 +119,7 @@
         pokemon:baseExperienceYield  "239"^^xsd:int;
         pokemon:catchRate            "45"^^xsd:int;
         pokemon:category             "Shellfish";
-        pokemon:evolutionStage       "8"^^xsd:int;
+        pokemon:evolutionStage       "3"^^xsd:int;
         pokemon:evolvesFrom          <http://example.org/pokemon/pokemon/0008>;
         pokemon:generation           "1"^^xsd:int;
         pokemon:japaneseName         "カメックス";
@@ -141,8 +140,7 @@
         pokemon:baseExperienceYield  "62"^^xsd:int;
         pokemon:catchRate            "45"^^xsd:int;
         pokemon:category             "Lizard";
-        pokemon:evolutionStage       "3"^^xsd:int;
-        pokemon:evolvesFrom          <http://example.org/pokemon/pokemon/0003>;
+        pokemon:evolutionStage       "1"^^xsd:int;
         pokemon:generation           "1"^^xsd:int;
         pokemon:japaneseName         "ヒトカゲ";
         pokemon:primaryAbility       <http://example.org/pokemon/ability/blaze>;
@@ -162,7 +160,7 @@
         pokemon:baseExperienceYield  "240"^^xsd:int;
         pokemon:catchRate            "45"^^xsd:int;
         pokemon:category             "Flame";
-        pokemon:evolutionStage       "5"^^xsd:int;
+        pokemon:evolutionStage       "3"^^xsd:int;
         pokemon:evolvesFrom          <http://example.org/pokemon/pokemon/0005>;
         pokemon:generation           "1"^^xsd:int;
         pokemon:japaneseName         "リザードン";
@@ -184,6 +182,7 @@
         pokemon:baseExperienceYield  "64"^^xsd:int;
         pokemon:catchRate            "45"^^xsd:int;
         pokemon:category             "Seed";
+        pokemon:evolutionStage       "1"^^xsd:int;
         pokemon:generation           "1"^^xsd:int;
         pokemon:japaneseName         "フシギダネ";
         pokemon:primaryAbility       <http://example.org/pokemon/ability/overgrow>;

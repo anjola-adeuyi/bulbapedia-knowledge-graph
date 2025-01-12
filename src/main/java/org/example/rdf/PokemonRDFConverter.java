@@ -30,7 +30,7 @@ public class PokemonRDFConverter {
         addStringProperty(model, pokemonResource, SCHEMA_URI + "name", pokemonInfo.get("name"));
         addStringProperty(model, pokemonResource, SCHEMA_URI + "identifier", pokemonId);
         
-        // Physical characteristics with proper decimal type
+        // Physical characteristics
         addDecimalProperty(model, pokemonResource, SCHEMA_URI + "height", pokemonInfo.get("height-m"));
         addDecimalProperty(model, pokemonResource, SCHEMA_URI + "weight", pokemonInfo.get("weight-kg"));
 
@@ -38,20 +38,23 @@ public class PokemonRDFConverter {
         addStringProperty(model, pokemonResource, BASE_URI + "japaneseName", pokemonInfo.get("jname"));
         addStringProperty(model, pokemonResource, BASE_URI + "romajiName", pokemonInfo.get("tmname"));
         addStringProperty(model, pokemonResource, BASE_URI + "category", pokemonInfo.get("category"));
-        
-        // Types
         addStringProperty(model, pokemonResource, BASE_URI + "primaryType", pokemonInfo.get("type1"));
         if (pokemonInfo.containsKey("type2")) {
             addStringProperty(model, pokemonResource, BASE_URI + "secondaryType", pokemonInfo.get("type2"));
         }
 
         // Evolution chain info
-        int dexNum = Integer.parseInt(pokemonId);
-        if (dexNum > 1) {
-            String prevNum = String.format("%04d", dexNum - 1);
-            Resource prevPokemon = model.createResource(BASE_URI + "pokemon/" + prevNum);
-            pokemonResource.addProperty(model.createProperty(BASE_URI + "evolvesFrom"), prevPokemon);
-            addIntegerProperty(model, pokemonResource, BASE_URI + "evolutionStage", String.valueOf(dexNum - 1));
+        if (pokemonInfo.containsKey("evolutionStage")) {
+            addIntegerProperty(model, pokemonResource, BASE_URI + "evolutionStage", 
+                pokemonInfo.get("evolutionStage"));
+            
+            if (pokemonInfo.containsKey("evolvesFrom")) {
+                Resource prevPokemon = model.createResource(BASE_URI + "pokemon/" + 
+                    String.format("%04d", Integer.parseInt(pokemonId) - 1));
+                pokemonResource.addProperty(
+                    model.createProperty(BASE_URI + "evolvesFrom"), 
+                    prevPokemon);
+            }
         }
 
         // Game mechanics
