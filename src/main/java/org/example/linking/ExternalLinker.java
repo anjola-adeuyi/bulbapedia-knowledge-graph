@@ -6,8 +6,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -16,12 +14,12 @@ import java.time.Duration;
 
 public class ExternalLinker {
     private static final Logger logger = LoggerFactory.getLogger(ExternalLinker.class);
-    private static final String DBPEDIA_SPARQL_ENDPOINT = "https://dbpedia.org/sparql";
+    private static final String WIKIDATA_SPARQL_ENDPOINT = "https://query.wikidata.org/sparql";
     private final HttpClient httpClient;
 
     public ExternalLinker() {
         this.httpClient = HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(30))
+                .connectTimeout(Duration.ofSeconds(10))
                 .build();
     }
 
@@ -35,61 +33,87 @@ public class ExternalLinker {
                 model.createProperty("http://schema.org/name"))
                 .getString();
 
-            // Find DBpedia resource
-            String dbpediaUri = findDBpediaResource(pokemonName);
-            if (dbpediaUri != null) {
+            String wikidataUri = findWikidataResource(pokemonName);
+            if (wikidataUri != null) {
                 pokemon.addProperty(OWL.sameAs, 
-                    model.createResource(dbpediaUri));
-                logger.info("Added DBpedia link for {}: {}", 
-                    pokemonName, dbpediaUri);
+                    model.createResource(wikidataUri));
+                String dbpediaUri = wikidataToDBpedia(wikidataUri);
+                if (dbpediaUri != null) {
+                    pokemon.addProperty(OWL.sameAs, 
+                        model.createResource(dbpediaUri));
+                }
+                logger.info("Added external links for {}", pokemonName);
             }
         }
     }
 
-    private String findDBpediaResource(String pokemonName) {
-        // Simpler query that just looks for resources with matching label
+    private String findWikidataResource(String pokemonName) {
         String query = String.format(
-            "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n" +
-            "SELECT DISTINCT ?resource WHERE {\n" +
-            "  ?resource rdfs:label \"%s\"@en .\n" +
-            "  FILTER EXISTS { ?resource ?p ?o }\n" +
-            "} LIMIT 1",
-            pokemonName);
+            "SELECT ?item WHERE {" +
+            "  ?item rdfs:label \"%s\"@en ." +
+            "  ?item wdt:P31/wdt:P279* wd:Q1420 . # instance of Pokemon" +
+            "}", pokemonName);
 
         try {
             String encodedQuery = java.net.URLEncoder.encode(query, "UTF-8");
             HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("http://dbpedia.org/sparql" + "?query=" + encodedQuery + "&format=json"))
+                .uri(URI.create(WIKIDATA_SPARQL_ENDPOINT + "?query=" + encodedQuery))
                 .header("Accept", "application/sparql-results+json")
-                .timeout(Duration.ofSeconds(10))  // Reduced timeout
                 .GET()
                 .build();
 
-            logger.debug("Querying DBpedia for {}", pokemonName);
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            logger.debug("DBpedia response status: {}", response.statusCode());
+            HttpResponse<String> response = httpClient.send(request, 
+                HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() == 200) {
                 JSONObject json = new JSONObject(response.body());
                 JSONArray bindings = json.getJSONObject("results")
                                       .getJSONArray("bindings");
-                
-                if (bindings.length() > 0) {
-                    String uri = bindings.getJSONObject(0)
-                                      .getJSONObject("resource")
-                                      .getString("value");
-                    logger.info("Found DBpedia resource for {}: {}", 
-                              pokemonName, uri);
-                    return uri;
+                if (!bindings.isEmpty()) {
+                    return bindings.getJSONObject(0)
+                                 .getJSONObject("item")
+                                 .getString("value");
                 }
-            } else {
-                logger.warn("DBpedia query failed with status code: {} for {}", 
-                          response.statusCode(), pokemonName);
-                logger.debug("Response: {}", response.body());
             }
         } catch (Exception e) {
-            logger.warn("Error finding DBpedia resource for {}: {}", 
-                pokemonName, e.getMessage());
+            logger.warn("Error finding Wikidata resource: {}", e.getMessage());
+        }
+        return null;
+    }
+
+    private String wikidataToDBpedia(String wikidataUri) {
+        // Convert Wikidata URI to DBpedia URI
+        // Example: http://www.wikidata.org/entity/Q2859 -> http://dbpedia.org/resource/Bulbasaur
+        String wikidataId = wikidataUri.substring(wikidataUri.lastIndexOf("/") + 1);
+        String query = String.format(
+            "SELECT ?article WHERE {" +
+            "  wd:%s wdt:P1551 ?article . " + // P1551 is the property for DBpedia ID
+            "}", wikidataId);
+
+        try {
+            String encodedQuery = java.net.URLEncoder.encode(query, "UTF-8");
+            HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(WIKIDATA_SPARQL_ENDPOINT + "?query=" + encodedQuery))
+                .header("Accept", "application/sparql-results+json")
+                .GET()
+                .build();
+
+            HttpResponse<String> response = httpClient.send(request, 
+                HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() == 200) {
+                JSONObject json = new JSONObject(response.body());
+                JSONArray bindings = json.getJSONObject("results")
+                                      .getJSONArray("bindings");
+                if (!bindings.isEmpty()) {
+                    String dbpediaId = bindings.getJSONObject(0)
+                                             .getJSONObject("article")
+                                             .getString("value");
+                    return "http://dbpedia.org/resource/" + dbpediaId;
+                }
+            }
+        } catch (Exception e) {
+            logger.warn("Error converting Wikidata to DBpedia: {}", e.getMessage());
         }
         return null;
     }

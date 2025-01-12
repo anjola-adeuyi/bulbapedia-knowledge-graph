@@ -6,7 +6,7 @@
 
 <http://example.org/pokemon/pokemon/0002>
         rdf:type                     pokemon:Pokemon;
-        rdfs:label                   "Ivysaur"@en , "フシギソウ"@ja;
+        rdfs:label                   "Fushigisou"@ja-Latn , "Ivysaur"@en , "フシギソウ"@ja;
         pokemon:baseExperienceYield  "142"^^xsd:int;
         pokemon:catchRate            "45"^^xsd:int;
         pokemon:category             "Seed";
@@ -25,7 +25,7 @@
 
 <http://example.org/pokemon/pokemon/0003>
         rdf:type                     pokemon:Pokemon;
-        rdfs:label                   "フシギバナ"@ja , "Venusaur"@en;
+        rdfs:label                   "Fushigibana"@ja-Latn , "フシギバナ"@ja , "Venusaur"@en;
         pokemon:baseExperienceYield  "236"^^xsd:int;
         pokemon:catchRate            "45"^^xsd:int;
         pokemon:category             "Seed";
@@ -44,7 +44,7 @@
 
 <http://example.org/pokemon/pokemon/0001>
         rdf:type                     pokemon:Pokemon;
-        rdfs:label                   "フシギダネ"@ja , "Bulbasaur"@en;
+        rdfs:label                   "フシギダネ"@ja , "Bulbasaur"@en , "Fushigidane"@ja-Latn;
         pokemon:baseExperienceYield  "64"^^xsd:int;
         pokemon:catchRate            "45"^^xsd:int;
         pokemon:category             "Seed";
