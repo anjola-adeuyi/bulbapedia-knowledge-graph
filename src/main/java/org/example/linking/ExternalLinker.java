@@ -12,10 +12,20 @@ public class ExternalLinker {
     private static final Map<String, String> POKEMON_WIKIDATA_IDS = new HashMap<>();
     
     static {
-        // Known Wikidata IDs for first generation Pokemon
+        // Grass starter line
         POKEMON_WIKIDATA_IDS.put("Bulbasaur", "Q1410");
         POKEMON_WIKIDATA_IDS.put("Ivysaur", "Q1411");
         POKEMON_WIKIDATA_IDS.put("Venusaur", "Q1412");
+        
+        // Fire starter line
+        POKEMON_WIKIDATA_IDS.put("Charmander", "Q1416");
+        POKEMON_WIKIDATA_IDS.put("Charmeleon", "Q1417");
+        POKEMON_WIKIDATA_IDS.put("Charizard", "Q1418");
+        
+        // Water starter line
+        POKEMON_WIKIDATA_IDS.put("Squirtle", "Q1420");
+        POKEMON_WIKIDATA_IDS.put("Wartortle", "Q1421");
+        POKEMON_WIKIDATA_IDS.put("Blastoise", "Q1422");
     }
 
     public void addExternalLinks(Model model) {

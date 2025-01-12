@@ -4,27 +4,26 @@
 @prefix schema:  <http://schema.org/> .
 @prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
 
-<http://example.org/pokemon/pokemon/0002>
+<http://example.org/pokemon/pokemon/0008>
         rdf:type                     pokemon:Pokemon;
-        rdfs:label                   "Fushigisou"@ja-Latn , "Ivysaur"@en , "フシギソウ"@ja;
+        rdfs:label                   "カメール"@ja , "Wartortle"@en , "Kameil"@ja-Latn;
         pokemon:baseExperienceYield  "142"^^xsd:int;
         pokemon:catchRate            "45"^^xsd:int;
-        pokemon:category             "Seed";
-        pokemon:evolutionStage       "1"^^xsd:int;
-        pokemon:evolvesFrom          <http://example.org/pokemon/pokemon/0001>;
+        pokemon:category             "Turtle";
+        pokemon:evolutionStage       "7"^^xsd:int;
+        pokemon:evolvesFrom          <http://example.org/pokemon/pokemon/0007>;
         pokemon:generation           "1"^^xsd:int;
-        pokemon:japaneseName         "フシギソウ";
-        pokemon:primaryAbility       <http://example.org/pokemon/ability/overgrow>;
-        pokemon:primaryType          "Grass";
-        pokemon:romajiName           "Fushigisou";
-        pokemon:secondaryType        "Poison";
+        pokemon:japaneseName         "カメール";
+        pokemon:primaryAbility       <http://example.org/pokemon/ability/torrent>;
+        pokemon:primaryType          "Water";
+        pokemon:romajiName           "Kameil";
         schema:height                "1"^^xsd:decimal;
-        schema:identifier            "0002";
-        schema:name                  "Ivysaur";
-        schema:sameAs                <https://en.wikipedia.org/wiki/Ivysaur>;
-        schema:weight                "13"^^xsd:decimal;
+        schema:identifier            "0008";
+        schema:name                  "Wartortle";
+        schema:sameAs                <https://en.wikipedia.org/wiki/Wartortle>;
+        schema:weight                22.5;
         <http://www.w3.org/2002/07/owl#sameAs>
-                <http://dbpedia.org/resource/Ivysaur> , <http://www.wikidata.org/entity/Q1411> .
+                <http://www.wikidata.org/entity/Q1421> , <http://dbpedia.org/resource/Wartortle> .
 
 <http://example.org/pokemon/pokemon/0003>
         rdf:type                     pokemon:Pokemon;
@@ -48,6 +47,137 @@
         <http://www.w3.org/2002/07/owl#sameAs>
                 <http://www.wikidata.org/entity/Q1412> , <http://dbpedia.org/resource/Venusaur> .
 
+<http://example.org/pokemon/ability/blaze>
+        rdfs:label  "Blaze" .
+
+<http://example.org/pokemon/pokemon/0005>
+        rdf:type                     pokemon:Pokemon;
+        rdfs:label                   "Lizardo"@ja-Latn , "Charmeleon"@en , "リザード"@ja;
+        pokemon:baseExperienceYield  "142"^^xsd:int;
+        pokemon:catchRate            "45"^^xsd:int;
+        pokemon:category             "Flame";
+        pokemon:evolutionStage       "4"^^xsd:int;
+        pokemon:evolvesFrom          <http://example.org/pokemon/pokemon/0004>;
+        pokemon:generation           "1"^^xsd:int;
+        pokemon:japaneseName         "リザード";
+        pokemon:primaryAbility       <http://example.org/pokemon/ability/blaze>;
+        pokemon:primaryType          "Fire";
+        pokemon:romajiName           "Lizardo";
+        schema:height                1.1;
+        schema:identifier            "0005";
+        schema:name                  "Charmeleon";
+        schema:sameAs                <https://en.wikipedia.org/wiki/Charmeleon>;
+        schema:weight                "19"^^xsd:decimal;
+        <http://www.w3.org/2002/07/owl#sameAs>
+                <http://www.wikidata.org/entity/Q1417> , <http://dbpedia.org/resource/Charmeleon> .
+
+<http://example.org/pokemon/ability/overgrow>
+        rdfs:label  "Overgrow" .
+
+<http://example.org/pokemon/pokemon/0007>
+        rdf:type                pokemon:Pokemon;
+        rdfs:label              "Zenigame"@ja-Latn , "Squirtle"@en , "ゼニガメ"@ja;
+        pokemon:category        "{{tt";
+        pokemon:evolutionStage  "6"^^xsd:int;
+        pokemon:evolvesFrom     <http://example.org/pokemon/pokemon/0006>;
+        pokemon:japaneseName    "ゼニガメ";
+        pokemon:primaryType     "Water";
+        pokemon:romajiName      "Zenigame";
+        schema:identifier       "0007";
+        schema:name             "Squirtle";
+        schema:sameAs           <https://en.wikipedia.org/wiki/Squirtle>;
+        <http://www.w3.org/2002/07/owl#sameAs>
+                <http://www.wikidata.org/entity/Q1420> , <http://dbpedia.org/resource/Squirtle> .
+
+<http://example.org/pokemon/pokemon/0002>
+        rdf:type                     pokemon:Pokemon;
+        rdfs:label                   "Fushigisou"@ja-Latn , "Ivysaur"@en , "フシギソウ"@ja;
+        pokemon:baseExperienceYield  "142"^^xsd:int;
+        pokemon:catchRate            "45"^^xsd:int;
+        pokemon:category             "Seed";
+        pokemon:evolutionStage       "1"^^xsd:int;
+        pokemon:evolvesFrom          <http://example.org/pokemon/pokemon/0001>;
+        pokemon:generation           "1"^^xsd:int;
+        pokemon:japaneseName         "フシギソウ";
+        pokemon:primaryAbility       <http://example.org/pokemon/ability/overgrow>;
+        pokemon:primaryType          "Grass";
+        pokemon:romajiName           "Fushigisou";
+        pokemon:secondaryType        "Poison";
+        schema:height                "1"^^xsd:decimal;
+        schema:identifier            "0002";
+        schema:name                  "Ivysaur";
+        schema:sameAs                <https://en.wikipedia.org/wiki/Ivysaur>;
+        schema:weight                "13"^^xsd:decimal;
+        <http://www.w3.org/2002/07/owl#sameAs>
+                <http://dbpedia.org/resource/Ivysaur> , <http://www.wikidata.org/entity/Q1411> .
+
+<http://example.org/pokemon/ability/torrent>
+        rdfs:label  "Torrent" .
+
+<http://example.org/pokemon/pokemon/0009>
+        rdf:type                     pokemon:Pokemon;
+        rdfs:label                   "Kamex"@ja-Latn , "Blastoise"@en , "カメックス"@ja;
+        pokemon:baseExperienceYield  "239"^^xsd:int;
+        pokemon:catchRate            "45"^^xsd:int;
+        pokemon:category             "Shellfish";
+        pokemon:evolutionStage       "8"^^xsd:int;
+        pokemon:evolvesFrom          <http://example.org/pokemon/pokemon/0008>;
+        pokemon:generation           "1"^^xsd:int;
+        pokemon:japaneseName         "カメックス";
+        pokemon:primaryAbility       <http://example.org/pokemon/ability/torrent>;
+        pokemon:primaryType          "Water";
+        pokemon:romajiName           "Kamex";
+        schema:height                1.6;
+        schema:identifier            "0009";
+        schema:name                  "Blastoise";
+        schema:sameAs                <https://en.wikipedia.org/wiki/Blastoise>;
+        schema:weight                85.5;
+        <http://www.w3.org/2002/07/owl#sameAs>
+                <http://dbpedia.org/resource/Blastoise> , <http://www.wikidata.org/entity/Q1422> .
+
+<http://example.org/pokemon/pokemon/0004>
+        rdf:type                     pokemon:Pokemon;
+        rdfs:label                   "Hitokage"@ja-Latn , "ヒトカゲ"@ja , "Charmander"@en;
+        pokemon:baseExperienceYield  "62"^^xsd:int;
+        pokemon:catchRate            "45"^^xsd:int;
+        pokemon:category             "Lizard";
+        pokemon:evolutionStage       "3"^^xsd:int;
+        pokemon:evolvesFrom          <http://example.org/pokemon/pokemon/0003>;
+        pokemon:generation           "1"^^xsd:int;
+        pokemon:japaneseName         "ヒトカゲ";
+        pokemon:primaryAbility       <http://example.org/pokemon/ability/blaze>;
+        pokemon:primaryType          "Fire";
+        pokemon:romajiName           "Hitokage";
+        schema:height                0.6;
+        schema:identifier            "0004";
+        schema:name                  "Charmander";
+        schema:sameAs                <https://en.wikipedia.org/wiki/Charmander>;
+        schema:weight                8.5;
+        <http://www.w3.org/2002/07/owl#sameAs>
+                <http://dbpedia.org/resource/Charmander> , <http://www.wikidata.org/entity/Q1416> .
+
+<http://example.org/pokemon/pokemon/0006>
+        rdf:type                     pokemon:Pokemon;
+        rdfs:label                   "Charizard"@en , "リザードン"@ja , "Lizardon"@ja-Latn;
+        pokemon:baseExperienceYield  "240"^^xsd:int;
+        pokemon:catchRate            "45"^^xsd:int;
+        pokemon:category             "Flame";
+        pokemon:evolutionStage       "5"^^xsd:int;
+        pokemon:evolvesFrom          <http://example.org/pokemon/pokemon/0005>;
+        pokemon:generation           "1"^^xsd:int;
+        pokemon:japaneseName         "リザードン";
+        pokemon:primaryAbility       <http://example.org/pokemon/ability/blaze>;
+        pokemon:primaryType          "Fire";
+        pokemon:romajiName           "Lizardon";
+        pokemon:secondaryType        "Flying";
+        schema:height                1.7;
+        schema:identifier            "0006";
+        schema:name                  "Charizard";
+        schema:sameAs                <https://en.wikipedia.org/wiki/Charizard>;
+        schema:weight                90.5;
+        <http://www.w3.org/2002/07/owl#sameAs>
+                <http://www.wikidata.org/entity/Q1418> , <http://dbpedia.org/resource/Charizard> .
+
 <http://example.org/pokemon/pokemon/0001>
         rdf:type                     pokemon:Pokemon;
         rdfs:label                   "フシギダネ"@ja , "Bulbasaur"@en , "Fushigidane"@ja-Latn;
@@ -67,6 +197,3 @@
         schema:weight                6.9;
         <http://www.w3.org/2002/07/owl#sameAs>
                 <http://dbpedia.org/resource/Bulbasaur> , <http://www.wikidata.org/entity/Q1410> .
-
-<http://example.org/pokemon/ability/overgrow>
-        rdfs:label  "Overgrow" .
