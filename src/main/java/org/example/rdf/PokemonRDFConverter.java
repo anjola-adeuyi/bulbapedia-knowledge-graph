@@ -49,8 +49,8 @@ public class PokemonRDFConverter {
                 pokemonInfo.get("evolutionStage"));
             
             if (pokemonInfo.containsKey("evolvesFrom")) {
-                Resource prevPokemon = model.createResource(BASE_URI + "pokemon/" + 
-                    String.format("%04d", Integer.parseInt(pokemonId) - 1));
+                String prevId = pokemonInfo.get("evolvesFrom");
+                Resource prevPokemon = model.createResource(BASE_URI + "pokemon/" + prevId);
                 pokemonResource.addProperty(
                     model.createProperty(BASE_URI + "evolvesFrom"), 
                     prevPokemon);
@@ -102,7 +102,7 @@ public class PokemonRDFConverter {
                 int numericValue = Integer.parseInt(value);
                 Property property = model.createProperty(propertyUri);
                 resource.addProperty(property, 
-                    model.createTypedLiteral(numericValue));
+                    model.createTypedLiteral(numericValue, XSD.xint.getURI()));
             } catch (NumberFormatException e) {
                 logger.warn("Failed to parse integer value: {} for property: {}", value, propertyUri);
             }
