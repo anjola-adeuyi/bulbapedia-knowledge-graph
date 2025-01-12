@@ -1,5 +1,7 @@
 org/example/client/EvolutionChainFetcher.class
 org/example/server/LinkedDataServer.class
+org/example/parser/MultilingualDataHandler.class
+org/example/linking/ExternalLinker.class
 org/example/server/PokemonFusekiServer.class
 org/example/validation/RDFValidator.class
 org/example/client/BulbapediaClient.class

@@ -4,6 +4,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.example.client.BulbapediaClient;
 import org.example.client.EvolutionChainFetcher;
+import org.example.linking.ExternalLinker;
+import org.example.parser.MultilingualDataHandler;
 import org.example.parser.WikiInfoboxParser;
 import org.example.rdf.PokemonRDFConverter;
 import org.example.server.PokemonFusekiServer;
@@ -13,6 +15,9 @@ import org.example.server.EndpointTester;
 import org.example.server.LinkedDataServer;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.vocabulary.OWL;
+import org.apache.jena.vocabulary.RDFS;
+
 import java.util.List;
 import java.util.Map;
 
@@ -43,6 +48,24 @@ public class App {
                 Model pokemonModel = converter.convertToRDF(pokemonInfo);
                 combinedModel.add(pokemonModel);
             }
+
+            // Add multilingual labels
+            MultilingualDataHandler multiHandler = new MultilingualDataHandler();
+            multiHandler.loadTSVData();
+            multiHandler.enrichModelWithLabels(combinedModel);
+
+            // Add external links
+            logger.info("Starting external linking process");
+            ExternalLinker linker = new ExternalLinker();
+            linker.addExternalLinks(combinedModel);
+            
+            // Log model statistics
+            logger.info("Final model statistics:");
+            logger.info("Total triples: {}", combinedModel.size());
+            logger.info("Resources with rdfs:label: {}", 
+                combinedModel.listResourcesWithProperty(RDFS.label).toList().size());
+            logger.info("Resources with owl:sameAs: {}", 
+                combinedModel.listResourcesWithProperty(OWL.sameAs).toList().size());
             
             // Save the combined model
             String outputFile = "pokemon.ttl";
