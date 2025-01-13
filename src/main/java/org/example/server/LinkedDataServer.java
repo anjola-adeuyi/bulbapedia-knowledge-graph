@@ -236,35 +236,117 @@ public class LinkedDataServer {
     private String renderTemplate(Map<String, Object> data) {
         String result = htmlTemplate;
 
-        // Handle simple properties
-        for (Map.Entry<String, Object> entry : data.entrySet()) {
-            String placeholder = "${" + entry.getKey() + "}";
-            if (!(entry.getValue() instanceof Map)) {
-                result = result.replace(placeholder, String.valueOf(entry.getValue()));
-            }
+        // Handle primary type badge
+        String type = (String) data.get("primaryType");
+        String typeBadge = String.format(
+            "<span class=\"type-badge\" style=\"background-color: var(--%s-color)\">%s</span>",
+            type.toLowerCase(), type
+        );
+
+        // Handle secondary type badge
+        if (data.containsKey("secondaryType")) {
+            String secondaryType = (String) data.get("secondaryType");
+            typeBadge += String.format(
+                "<span class=\"type-badge\" style=\"background-color: var(--%s-color)\">%s</span>",
+                secondaryType.toLowerCase(), secondaryType
+            );
+        }
+        result = result.replace("${typeBadges}", typeBadge);
+
+        // Handle basic properties
+        result = result.replace("${name}", (String) data.get("name"));
+        result = result.replace("${id}", (String) data.get("id"));
+        result = result.replace("${height}", data.get("height").toString());
+        result = result.replace("${weight}", data.get("weight").toString());
+        result = result.replace("${category}", (String) data.get("category"));
+
+        // Handle names section
+        String englishName = (String) data.get("name");
+        String japaneseName = (String) data.getOrDefault("japaneseName", "");
+        String romajiName = (String) data.getOrDefault("romajiName", "");
+
+        StringBuilder namesHtml = new StringBuilder();
+        namesHtml.append("<div class=\"stat-row\"><span class=\"stat-label\">English</span><span>")
+                .append(englishName)
+                .append("</span></div>");
+
+        if (!japaneseName.isEmpty()) {
+            namesHtml.append("<div class=\"stat-row\"><span class=\"stat-label\">Japanese</span><span>")
+                    .append(japaneseName)
+                    .append("</span></div>");
         }
 
-        // Handle previous pokemon
+        if (!romajiName.isEmpty()) {
+            namesHtml.append("<div class=\"stat-row\"><span class=\"stat-label\">Rōmaji</span><span>")
+                    .append(romajiName)
+                    .append("</span></div>");
+        }
+        result = result.replace("${namesSection}", namesHtml.toString());
+
+        // Handle evolution chain
+        String prevPokemonHtml = "";
         @SuppressWarnings("unchecked")
         Map<String, String> prevPokemon = (Map<String, String>) data.get("prevPokemon");
-        String prevSection = prevPokemon != null ?
-            "<a href=\"/resource/" + prevPokemon.get("id") + "\" class=\"pokemon-card\">" +
-            "<h3>" + prevPokemon.get("name") + "</h3>" +
-            "<p>#" + prevPokemon.get("id") + "</p>" +
-            "</a>" +
-            "<span class=\"evolution-arrow\">→</span>" : "";
-        result = result.replace("${prevPokemonSection}", prevSection);
+        if (prevPokemon != null) {
+            prevPokemonHtml = String.format(
+                "<a href=\"/resource/%s\" class=\"pokemon-card\">" +
+                "<h3>%s</h3>" +
+                "<p>#%s</p>" +
+                "</a>" +
+                "<span class=\"evolution-arrow\">→</span>",
+                prevPokemon.get("id"),
+                prevPokemon.get("name"),
+                prevPokemon.get("id")
+            );
+        }
 
-        // Handle next pokemon
+        String nextPokemonHtml = "";
         @SuppressWarnings("unchecked")
         Map<String, String> nextPokemon = (Map<String, String>) data.get("nextPokemon");
-        String nextSection = nextPokemon != null ?
-            "<span class=\"evolution-arrow\">→</span>" +
-            "<a href=\"/resource/" + nextPokemon.get("id") + "\" class=\"pokemon-card\">" +
-            "<h3>" + nextPokemon.get("name") + "</h3>" +
-            "<p>#" + nextPokemon.get("id") + "</p>" +
-            "</a>" : "";
-        result = result.replace("${nextPokemonSection}", nextSection);
+        if (nextPokemon != null) {
+            nextPokemonHtml = String.format(
+                "<span class=\"evolution-arrow\">→</span>" +
+                "<a href=\"/resource/%s\" class=\"pokemon-card\">" +
+                "<h3>%s</h3>" +
+                "<p>#%s</p>" +
+                "</a>",
+                nextPokemon.get("id"),
+                nextPokemon.get("name"),
+                nextPokemon.get("id")
+            );
+        }
+
+        // Replace evolution chain placeholders
+        result = result.replace("${prevPokemonSection}", prevPokemonHtml);
+        result = result.replace("${nextPokemonSection}", nextPokemonHtml);
+
+        // Handle external links
+        StringBuilder externalLinksHtml = new StringBuilder();
+        externalLinksHtml.append(String.format(
+            "<a href=\"https://bulbapedia.bulbagarden.net/wiki/%s_(Pok%%C3%%A9mon)\" " +
+            "class=\"external-link\" target=\"_blank\" rel=\"noopener noreferrer\">Bulbapedia</a>",
+            englishName
+        ));
+
+        if (data.containsKey("dbpediaLink")) {
+            externalLinksHtml.append(String.format(
+                "<a href=\"%s\" class=\"external-link\" target=\"_blank\" rel=\"noopener noreferrer\">DBpedia</a>",
+                data.get("dbpediaLink")
+            ));
+        }
+
+        if (data.containsKey("wikidataLink")) {
+            externalLinksHtml.append(String.format(
+                "<a href=\"%s\" class=\"external-link\" target=\"_blank\" rel=\"noopener noreferrer\">Wikidata</a>",
+                data.get("wikidataLink")
+            ));
+        }
+
+        result = result.replace("${externalLinksSection}", externalLinksHtml.toString());
+
+        // Clean up any remaining conditional statements
+        result = result.replaceAll("\\$\\{\\w+\\s*!=\\s*null\\s*\\?\\s*'[^']*'\\s*:\\s*''\\}", "");
+        result = result.replaceAll("\\$\\{[^}]+\\}", ""); // Clean up any remaining variables
 
         return result;
     }

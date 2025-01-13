@@ -208,20 +208,7 @@
         <span class="pokemon-id">#${id}</span>
       </div>
 
-      <div class="type-badges">
-        <span
-          class="type-badge"
-          style="background-color: var(--${primaryType.toLowerCase()}-color)"
-          >${primaryType}</span
-        >
-        ${secondaryType != null ? `
-        <span
-          class="type-badge"
-          style="background-color: var(--${secondaryType.toLowerCase()}-color)"
-          >${secondaryType}</span
-        >
-        ` : ''}
-      </div>
+      <div class="type-badges">${typeBadges}</div>
 
       <div class="stats-grid">
         <div class="stat-card">
@@ -242,21 +229,7 @@
 
         <div class="stat-card">
           <div class="stat-title">Names</div>
-          <div class="stat-row">
-            <span class="stat-label">English</span>
-            <span>${name}</span>
-          </div>
-          ${japaneseName != null ? `
-          <div class="stat-row">
-            <span class="stat-label">Japanese</span>
-            <span>${japaneseName}</span>
-          </div>
-          ` : ''} ${romajiName != null ? `
-          <div class="stat-row">
-            <span class="stat-label">Rōmaji</span>
-            <span>${romajiName}</span>
-          </div>
-          ` : ''}
+          ${namesSection}
         </div>
       </div>
 
@@ -271,31 +244,7 @@
 
       <div class="external-links">
         <h3>External Resources</h3>
-        <a
-          href="https://bulbapedia.bulbagarden.net/wiki/${name}_(Pok%C3%A9mon)"
-          class="external-link"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Bulbapedia
-        </a>
-        ${dbpediaLink != null ? `
-        <a
-          href="${dbpediaLink}"
-          class="external-link"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          DBpedia </a
-        >` : ''} ${wikidataLink != null ? `
-        <a
-          href="${wikidataLink}"
-          class="external-link"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Wikidata </a
-        >` : ''}
+        ${externalLinksSection}
       </div>
     </div>
 
