@@ -31,7 +31,7 @@
 <https://bulbapedia.bulbagarden.net/wiki/Charizard_(Pokémon)>
         schema:name    "Charizard";
         schema:sameAs  <https://en.wikipedia.org/wiki/Charizard>;
-        owl:sameAs     <http://dbpedia.org/resource/Charizard> , <http://www.wikidata.org/entity/Q1418> .
+        owl:sameAs     <http://www.wikidata.org/entity/Q1418> , <http://dbpedia.org/resource/Charizard> .
 
 <http://dbpedia.org/resource/Bayleef>
         schema:name  "Bayleef" .
@@ -62,7 +62,7 @@
 <http://dbpedia.org/resource/Charmander>
         schema:name    "Charmander";
         schema:sameAs  <https://en.wikipedia.org/wiki/Charmander>;
-        owl:sameAs     <http://www.wikidata.org/entity/Q1416> , <http://dbpedia.org/resource/Charmander> .
+        owl:sameAs     <http://dbpedia.org/resource/Charmander> , <http://www.wikidata.org/entity/Q1416> .
 
 <http://example.org/pokemon/Type/Water>
         rdfs:subClassOf  pokemon:Pokemon .
@@ -73,7 +73,7 @@
 <http://www.wikidata.org/entity/Q1410>
         schema:name    "Bulbasaur";
         schema:sameAs  <https://en.wikipedia.org/wiki/Bulbasaur>;
-        owl:sameAs     <http://www.wikidata.org/entity/Q1410> , <http://dbpedia.org/resource/Bulbasaur> .
+        owl:sameAs     <http://dbpedia.org/resource/Bulbasaur> , <http://www.wikidata.org/entity/Q1410> .
 
 <http://example.org/pokemon/pokemon/0006>
         rdf:type                     <http://example.org/pokemon/Type/Fire> , <http://example.org/pokemon//type> , pokemon:Pokemon;
@@ -102,7 +102,7 @@
 <http://dbpedia.org/resource/Blastoise>
         schema:name    "Blastoise";
         schema:sameAs  <https://en.wikipedia.org/wiki/Blastoise>;
-        owl:sameAs     <http://www.wikidata.org/entity/Q1422> , <http://dbpedia.org/resource/Blastoise> .
+        owl:sameAs     <http://dbpedia.org/resource/Blastoise> , <http://www.wikidata.org/entity/Q1422> .
 
 <http://example.org/pokemon/pokemon/0147>
         rdf:type                     pokemon:Pokemon , <http://example.org/pokemon/Type/Dragon> , <http://example.org/pokemon//type>;
@@ -126,12 +126,12 @@
 <https://bulbapedia.bulbagarden.net/wiki/Charmeleon_(Pokémon)>
         schema:name    "Charmeleon";
         schema:sameAs  <https://en.wikipedia.org/wiki/Charmeleon>;
-        owl:sameAs     <http://dbpedia.org/resource/Charmeleon> , <http://www.wikidata.org/entity/Q1417> .
+        owl:sameAs     <http://www.wikidata.org/entity/Q1417> , <http://dbpedia.org/resource/Charmeleon> .
 
 <http://www.wikidata.org/entity/Q1416>
         schema:name    "Charmander";
         schema:sameAs  <https://en.wikipedia.org/wiki/Charmander>;
-        owl:sameAs     <http://www.wikidata.org/entity/Q1416> , <http://dbpedia.org/resource/Charmander> .
+        owl:sameAs     <http://dbpedia.org/resource/Charmander> , <http://www.wikidata.org/entity/Q1416> .
 
 <https://bulbapedia.bulbagarden.net/wiki/Chikorita_(Pokémon)>
         schema:name  "Chikorita" .
@@ -142,7 +142,7 @@
 <https://bulbapedia.bulbagarden.net/wiki/Squirtle_(Pokémon)>
         schema:name    "Squirtle";
         schema:sameAs  <https://en.wikipedia.org/wiki/Squirtle>;
-        owl:sameAs     <http://dbpedia.org/resource/Squirtle> , <http://www.wikidata.org/entity/Q1420> .
+        owl:sameAs     <http://www.wikidata.org/entity/Q1420> , <http://dbpedia.org/resource/Squirtle> .
 
 <http://example.org/pokemon/pokemon/0001>
         rdf:type                     <http://example.org/pokemon/Type/Grass> , <http://example.org/pokemon//type> , pokemon:Pokemon;
@@ -167,7 +167,7 @@
 <http://www.wikidata.org/entity/Q1411>
         schema:name    "Ivysaur";
         schema:sameAs  <https://en.wikipedia.org/wiki/Ivysaur>;
-        owl:sameAs     <http://www.wikidata.org/entity/Q1411> , <http://dbpedia.org/resource/Ivysaur> .
+        owl:sameAs     <http://dbpedia.org/resource/Ivysaur> , <http://www.wikidata.org/entity/Q1411> .
 
 <http://example.org/pokemon/pokemon/0007>
         rdf:type                <http://example.org/pokemon//type> , <http://example.org/pokemon/Type/Water> , pokemon:Pokemon;
@@ -188,7 +188,7 @@
 <https://bulbapedia.bulbagarden.net/wiki/Venusaur_(Pokémon)>
         schema:name    "Venusaur";
         schema:sameAs  <https://en.wikipedia.org/wiki/Venusaur>;
-        owl:sameAs     <http://dbpedia.org/resource/Venusaur> , <http://www.wikidata.org/entity/Q1412> .
+        owl:sameAs     <http://www.wikidata.org/entity/Q1412> , <http://dbpedia.org/resource/Venusaur> .
 
 <http://example.org/pokemon/ability/blaze>
         rdfs:label  "Blaze" .
@@ -222,17 +222,17 @@
 <http://www.wikidata.org/entity/Q1417>
         schema:name    "Charmeleon";
         schema:sameAs  <https://en.wikipedia.org/wiki/Charmeleon>;
-        owl:sameAs     <http://www.wikidata.org/entity/Q1417> , <http://dbpedia.org/resource/Charmeleon> .
+        owl:sameAs     <http://dbpedia.org/resource/Charmeleon> , <http://www.wikidata.org/entity/Q1417> .
 
 <https://bulbapedia.bulbagarden.net/wiki/Bulbasaur_(Pokémon)>
         schema:name    "Bulbasaur";
         schema:sameAs  <https://en.wikipedia.org/wiki/Bulbasaur>;
-        owl:sameAs     <http://dbpedia.org/resource/Bulbasaur> , <http://www.wikidata.org/entity/Q1410> .
+        owl:sameAs     <http://www.wikidata.org/entity/Q1410> , <http://dbpedia.org/resource/Bulbasaur> .
 
 <https://bulbapedia.bulbagarden.net/wiki/Ivysaur_(Pokémon)>
         schema:name    "Ivysaur";
         schema:sameAs  <https://en.wikipedia.org/wiki/Ivysaur>;
-        owl:sameAs     <http://dbpedia.org/resource/Ivysaur> , <http://www.wikidata.org/entity/Q1411> .
+        owl:sameAs     <http://www.wikidata.org/entity/Q1411> , <http://dbpedia.org/resource/Ivysaur> .
 
 <http://dbpedia.org/resource/Dratini>
         schema:name  "Dratini" .
@@ -264,12 +264,12 @@
 <https://bulbapedia.bulbagarden.net/wiki/Wartortle_(Pokémon)>
         schema:name    "Wartortle";
         schema:sameAs  <https://en.wikipedia.org/wiki/Wartortle>;
-        owl:sameAs     <http://dbpedia.org/resource/Wartortle> , <http://www.wikidata.org/entity/Q1421> .
+        owl:sameAs     <http://www.wikidata.org/entity/Q1421> , <http://dbpedia.org/resource/Wartortle> .
 
 <http://www.wikidata.org/entity/Q1412>
         schema:name    "Venusaur";
         schema:sameAs  <https://en.wikipedia.org/wiki/Venusaur>;
-        owl:sameAs     <http://www.wikidata.org/entity/Q1412> , <http://dbpedia.org/resource/Venusaur> .
+        owl:sameAs     <http://dbpedia.org/resource/Venusaur> , <http://www.wikidata.org/entity/Q1412> .
 
 <http://example.org/pokemon/pokemon/0008>
         rdf:type                     <http://example.org/pokemon//type> , <http://example.org/pokemon/Type/Water> , pokemon:Pokemon;
@@ -315,17 +315,17 @@
 <http://dbpedia.org/resource/Venusaur>
         schema:name    "Venusaur";
         schema:sameAs  <https://en.wikipedia.org/wiki/Venusaur>;
-        owl:sameAs     <http://www.wikidata.org/entity/Q1412> , <http://dbpedia.org/resource/Venusaur> .
+        owl:sameAs     <http://dbpedia.org/resource/Venusaur> , <http://www.wikidata.org/entity/Q1412> .
 
 <http://www.wikidata.org/entity/Q1418>
         schema:name    "Charizard";
         schema:sameAs  <https://en.wikipedia.org/wiki/Charizard>;
-        owl:sameAs     <http://www.wikidata.org/entity/Q1418> , <http://dbpedia.org/resource/Charizard> .
+        owl:sameAs     <http://dbpedia.org/resource/Charizard> , <http://www.wikidata.org/entity/Q1418> .
 
 <http://www.wikidata.org/entity/Q1420>
         schema:name    "Squirtle";
         schema:sameAs  <https://en.wikipedia.org/wiki/Squirtle>;
-        owl:sameAs     <http://www.wikidata.org/entity/Q1420> , <http://dbpedia.org/resource/Squirtle> .
+        owl:sameAs     <http://dbpedia.org/resource/Squirtle> , <http://www.wikidata.org/entity/Q1420> .
 
 <http://example.org/pokemon/Type/Grass>
         rdfs:subClassOf  pokemon:Pokemon .
@@ -381,7 +381,7 @@
         owl:sameAs                   <http://dbpedia.org/resource/Blastoise> , <https://bulbapedia.bulbagarden.net/wiki/Blastoise_(Pokémon)> , <http://www.wikidata.org/entity/Q1422> .
 
 <http://example.org/pokemon//type>
-        rdfs:subClassOf  <http://example.org/pokemon/Type/Dragon> , <http://example.org/pokemon/Type/Water> , <http://example.org/pokemon/Type/Fire> , <http://example.org/pokemon/Type/Grass> .
+        rdfs:subClassOf  <http://example.org/pokemon/Type/Grass> , <http://example.org/pokemon/Type/Fire> , <http://example.org/pokemon/Type/Water> , <http://example.org/pokemon/Type/Dragon> .
 
 <http://dbpedia.org/resource/Dragonite>
         schema:name  "Dragonite" .
@@ -389,12 +389,12 @@
 <https://bulbapedia.bulbagarden.net/wiki/Charmander_(Pokémon)>
         schema:name    "Charmander";
         schema:sameAs  <https://en.wikipedia.org/wiki/Charmander>;
-        owl:sameAs     <http://dbpedia.org/resource/Charmander> , <http://www.wikidata.org/entity/Q1416> .
+        owl:sameAs     <http://www.wikidata.org/entity/Q1416> , <http://dbpedia.org/resource/Charmander> .
 
 <http://dbpedia.org/resource/Bulbasaur>
         schema:name    "Bulbasaur";
         schema:sameAs  <https://en.wikipedia.org/wiki/Bulbasaur>;
-        owl:sameAs     <http://www.wikidata.org/entity/Q1410> , <http://dbpedia.org/resource/Bulbasaur> .
+        owl:sameAs     <http://dbpedia.org/resource/Bulbasaur> , <http://www.wikidata.org/entity/Q1410> .
 
 <http://example.org/pokemon/ability/torrent>
         rdfs:label  "Torrent" .
@@ -424,12 +424,12 @@
 <http://dbpedia.org/resource/Squirtle>
         schema:name    "Squirtle";
         schema:sameAs  <https://en.wikipedia.org/wiki/Squirtle>;
-        owl:sameAs     <http://www.wikidata.org/entity/Q1420> , <http://dbpedia.org/resource/Squirtle> .
+        owl:sameAs     <http://dbpedia.org/resource/Squirtle> , <http://www.wikidata.org/entity/Q1420> .
 
 <http://www.wikidata.org/entity/Q1421>
         schema:name    "Wartortle";
         schema:sameAs  <https://en.wikipedia.org/wiki/Wartortle>;
-        owl:sameAs     <http://www.wikidata.org/entity/Q1421> , <http://dbpedia.org/resource/Wartortle> .
+        owl:sameAs     <http://dbpedia.org/resource/Wartortle> , <http://www.wikidata.org/entity/Q1421> .
 
 <http://example.org/pokemon/pokemon/0004>
         rdf:type                     pokemon:Pokemon , <http://example.org/pokemon//type> , <http://example.org/pokemon/Type/Fire>;
@@ -453,22 +453,22 @@
 <https://bulbapedia.bulbagarden.net/wiki/Blastoise_(Pokémon)>
         schema:name    "Blastoise";
         schema:sameAs  <https://en.wikipedia.org/wiki/Blastoise>;
-        owl:sameAs     <http://dbpedia.org/resource/Blastoise> , <http://www.wikidata.org/entity/Q1422> .
+        owl:sameAs     <http://www.wikidata.org/entity/Q1422> , <http://dbpedia.org/resource/Blastoise> .
 
 <http://dbpedia.org/resource/Ivysaur>
         schema:name    "Ivysaur";
         schema:sameAs  <https://en.wikipedia.org/wiki/Ivysaur>;
-        owl:sameAs     <http://www.wikidata.org/entity/Q1411> , <http://dbpedia.org/resource/Ivysaur> .
+        owl:sameAs     <http://dbpedia.org/resource/Ivysaur> , <http://www.wikidata.org/entity/Q1411> .
 
 <http://dbpedia.org/resource/Wartortle>
         schema:name    "Wartortle";
         schema:sameAs  <https://en.wikipedia.org/wiki/Wartortle>;
-        owl:sameAs     <http://www.wikidata.org/entity/Q1421> , <http://dbpedia.org/resource/Wartortle> .
+        owl:sameAs     <http://dbpedia.org/resource/Wartortle> , <http://www.wikidata.org/entity/Q1421> .
 
 <http://dbpedia.org/resource/Charizard>
         schema:name    "Charizard";
         schema:sameAs  <https://en.wikipedia.org/wiki/Charizard>;
-        owl:sameAs     <http://www.wikidata.org/entity/Q1418> , <http://dbpedia.org/resource/Charizard> .
+        owl:sameAs     <http://dbpedia.org/resource/Charizard> , <http://www.wikidata.org/entity/Q1418> .
 
 <http://example.org/pokemon/pokemon/0153>
         rdf:type                     <http://example.org/pokemon/Type/Grass> , <http://example.org/pokemon//type> , pokemon:Pokemon;
@@ -493,9 +493,9 @@
 <http://dbpedia.org/resource/Charmeleon>
         schema:name    "Charmeleon";
         schema:sameAs  <https://en.wikipedia.org/wiki/Charmeleon>;
-        owl:sameAs     <http://www.wikidata.org/entity/Q1417> , <http://dbpedia.org/resource/Charmeleon> .
+        owl:sameAs     <http://dbpedia.org/resource/Charmeleon> , <http://www.wikidata.org/entity/Q1417> .
 
 <http://www.wikidata.org/entity/Q1422>
         schema:name    "Blastoise";
         schema:sameAs  <https://en.wikipedia.org/wiki/Blastoise>;
-        owl:sameAs     <http://www.wikidata.org/entity/Q1422> , <http://dbpedia.org/resource/Blastoise> .
+        owl:sameAs     <http://dbpedia.org/resource/Blastoise> , <http://www.wikidata.org/entity/Q1422> .
