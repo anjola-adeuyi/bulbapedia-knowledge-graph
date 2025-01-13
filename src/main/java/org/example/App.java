@@ -9,14 +9,9 @@ import org.example.parser.MultilingualDataHandler;
 import org.example.parser.WikiInfoboxParser;
 import org.example.rdf.PokemonRDFConverter;
 import org.example.server.PokemonFusekiServer;
-import org.example.validation.PokemonShapes;
-import org.example.validation.RDFValidator;
-import org.example.server.EndpointTester;
 import org.example.server.LinkedDataServer;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.vocabulary.OWL;
-import org.apache.jena.vocabulary.RDFS;
 
 import java.util.List;
 import java.util.Map;
@@ -39,7 +34,7 @@ public class App {
             Model combinedModel = ModelFactory.createDefaultModel();
             
             // Fetch the entire evolution chain
-            logger.info("Fetching Bulbasaur evolution chain data...");
+            logger.info("Fetching evolution chain data...");
             List<Map<String, String>> evolutionChainData = fetcher.fetchEvolutionChain();
             
             // Process each Pokemon in the chain
@@ -49,7 +44,7 @@ public class App {
                     if (pokemonInfo != null && !pokemonInfo.isEmpty()) {
                         logger.debug("Processing Pokemon: {}", pokemonInfo.get("name"));
                         Model pokemonModel = converter.convertToRDF(pokemonInfo);
-                        combinedModel.add(pokemonModel);
+                        combinedModel.add(pokemonModel);  // Accumulate models
                     } else {
                         logger.warn("Failed to process Pokemon data: {}", pokemonData.get("title"));
                     }
@@ -67,95 +62,40 @@ public class App {
             logger.info("Starting external linking process");
             ExternalLinker linker = new ExternalLinker();
             linker.addExternalLinks(combinedModel);
-            
-            // Log model statistics
-            logger.info("Final model statistics:");
-            logger.info("Total triples: {}", combinedModel.size());
-            logger.info("Resources with rdfs:label: {}", 
-                combinedModel.listResourcesWithProperty(RDFS.label).toList().size());
-            logger.info("Resources with owl:sameAs: {}", 
-                combinedModel.listResourcesWithProperty(OWL.sameAs).toList().size());
-            
+
             // Save the combined model
             String outputFile = "pokemon.ttl";
+
+            // Before saving, try to load existing data if any
+            try {
+                Model existingModel = ModelFactory.createDefaultModel();
+                java.io.File file = new java.io.File(outputFile);
+                if (file.exists() && file.length() > 0) {
+                    existingModel.read(new java.io.FileInputStream(file), null, "TURTLE");
+                    combinedModel.add(existingModel);
+                }
+            } catch (Exception e) {
+                logger.warn("Could not load existing model, creating new one", e);
+            }
+
+            // Now save the combined model
             converter.saveModel(combinedModel, outputFile);
             logger.info("RDF data saved to " + outputFile);
-            
-            // Create and save SHACL shapes
-            PokemonShapes shapes = new PokemonShapes();
-            shapes.saveShapes("pokemon-shapes.ttl");
-            
-            // Validate the RDF data
-            RDFValidator validator = new RDFValidator(shapes.createShapes());
-            boolean isValid = validator.validate(combinedModel);
-            
-            if (isValid) {
-                // Start Fuseki server
+
+            // Start Fuseki server and load data
             fusekiServer = new PokemonFusekiServer();
             fusekiServer.start();
-            
-            // Load data into Fuseki
             fusekiServer.loadData(combinedModel);
 
-            // Create and save enhanced SHACL shapes
-            PokemonShapes enhancedShapes = new PokemonShapes();
-            enhancedShapes.saveShapes("pokemon-shapes.ttl");
-            
             // Start Linked Data interface
             LinkedDataServer ldServer = new LinkedDataServer(fusekiServer.getDataset(), 3331);
             ldServer.start();
-            
-            // Test the endpoints
-            EndpointTester tester = new EndpointTester("http://localhost:3330/pokemon");
-            tester.testEndpoints();
-            
-            // Print example complex queries
-            logger.info("\nExample complex SPARQL queries to try:");
-            logger.info("\n1. Find all Pokemon in the evolution chain:");
-            logger.info("PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
-                       "PREFIX pokemon: <http://example.org/pokemon/>\n" +
-                       "PREFIX schema: <http://schema.org/>\n" +
-                       "SELECT ?name ?stage ?evolves_from WHERE {\n" +
-                       "  ?pokemon rdf:type pokemon:Pokemon ;\n" +
-                       "           schema:name ?name ;\n" +
-                       "           pokemon:evolutionStage ?stage .\n" +
-                       "  OPTIONAL { ?pokemon pokemon:evolvesFrom ?evolves_from }\n" +
-                       "} ORDER BY ?stage");
 
-            // Add example inference queries
-            logger.info("\nExample inference queries to try:");
-            logger.info("\n1. Find Pokemon and their equivalent resources:");
-            logger.info("PREFIX owl: <http://www.w3.org/2002/07/owl#>\n" +
-                       "PREFIX schema: <http://schema.org/>\n" +
-                       "SELECT ?name ?altName WHERE {\n" +
-                       "  ?pokemon schema:name ?name ;\n" +
-                       "          owl:sameAs* ?same .\n" +
-                       "  ?same schema:name ?altName .\n" +
-                       "  FILTER(?name != ?altName)\n" +
-                       "} ORDER BY ?name");
-            
-            logger.info("\n2. Get evolution chains with inherited properties:");
-            logger.info("PREFIX pokemon: <http://example.org/pokemon/>\n" +
-                       "PREFIX schema: <http://schema.org/>\n" +
-                       "SELECT ?baseName ?evolvedName ?commonType WHERE {\n" +
-                       "  ?base schema:name ?baseName ;\n" +
-                       "        pokemon:primaryType ?commonType .\n" +
-                       "  ?evolved pokemon:evolvesFrom+ ?base ;\n" +
-                       "           schema:name ?evolvedName ;\n" +
-                       "           pokemon:primaryType ?commonType .\n" +
-                       "} ORDER BY ?baseName ?evolvedName");
-            
             // Keep the server running
-            logger.info("\nServer is running with inference enabled.");
-            logger.info("Use POST requests to /pokemon/query endpoint");
-            logger.info("Press Enter to stop the server...");
+            logger.info("\nServer is running. Press Enter to stop...");
             System.in.read();
-            
-        } else {
-            logger.error("RDF data is not valid. Please check the data and shapes.");
-        }
-            }
-        catch (Exception e) {
+
+        } catch (Exception e) {
             logger.error("Error occurred:", e);
         } finally {
             if (fusekiServer != null) {

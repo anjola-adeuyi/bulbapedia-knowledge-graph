@@ -189,8 +189,24 @@ public class PokemonRDFConverter {
 
     public void saveModel(Model model, String filename) {
         try {
-            logger.info("Saving RDF data to {}", filename);
-            model.write(new java.io.FileWriter(filename), "TURTLE");
+            // First check if file exists and has content
+            java.io.File file = new java.io.File(filename);
+            if (file.exists() && file.length() > 0) {
+                // Load existing model
+                Model existingModel = ModelFactory.createDefaultModel();
+                existingModel.read(new java.io.FileInputStream(file), null, "TURTLE");
+                
+                // Add new data to existing model
+                existingModel.add(model);
+                
+                // Save combined model
+                logger.info("Updating existing RDF data in {}", filename);
+                existingModel.write(new java.io.FileWriter(filename), "TURTLE");
+            } else {
+                // Create new file with model
+                logger.info("Saving new RDF data to {}", filename);
+                model.write(new java.io.FileWriter(filename), "TURTLE");
+            }
         } catch (java.io.IOException e) {
             logger.error("Error saving RDF data:", e);
         }

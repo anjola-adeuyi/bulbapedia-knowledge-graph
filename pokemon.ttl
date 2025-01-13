@@ -43,6 +43,9 @@
         <http://www.w3.org/2002/07/owl#sameAs>
                 <http://www.wikidata.org/entity/Q1421> , <http://dbpedia.org/resource/Wartortle> .
 
+<http://example.org/pokemon/Type/Dragon>
+        rdfs:subClassOf  pokemon:Pokemon .
+
 <http://example.org/pokemon/pokemon/0002>
         rdf:type                     <http://example.org/pokemon/Type/Grass> , pokemon:Pokemon;
         rdfs:label                   "Fushigisou"@ja-Latn , "Ivysaur"@en , "フシギソウ"@ja;
@@ -64,9 +67,6 @@
         schema:weight                "13"^^xsd:decimal;
         <http://www.w3.org/2002/07/owl#sameAs>
                 <http://dbpedia.org/resource/Ivysaur> , <http://www.wikidata.org/entity/Q1411> .
-
-<http://example.org/pokemon/Type/Dragon>
-        rdfs:subClassOf  pokemon:Pokemon .
 
 <http://example.org/pokemon/ability/inner_focus>
         rdfs:label  "Inner Focus" .
@@ -95,6 +95,9 @@
         <http://www.w3.org/2002/07/owl#sameAs>
                 <http://dbpedia.org/resource/Blastoise> , <http://www.wikidata.org/entity/Q1422> .
 
+<http://example.org/pokemon/ability/shed_skin>
+        rdfs:label  "Shed Skin" .
+
 <http://example.org/pokemon/pokemon/0003>
         rdf:type                     <http://example.org/pokemon/Type/Grass> , pokemon:Pokemon;
         rdfs:label                   "Fushigibana"@ja-Latn , "フシギバナ"@ja , "Venusaur"@en;
@@ -116,9 +119,6 @@
         schema:weight                "100"^^xsd:decimal;
         <http://www.w3.org/2002/07/owl#sameAs>
                 <http://www.wikidata.org/entity/Q1412> , <http://dbpedia.org/resource/Venusaur> .
-
-<http://example.org/pokemon/ability/shed_skin>
-        rdfs:label  "Shed Skin" .
 
 <http://example.org/pokemon/ability/overgrow>
         rdfs:label  "Overgrow" .
@@ -227,7 +227,7 @@
 
 <http://example.org/pokemon/pokemon/0006>
         rdf:type                     <http://example.org/pokemon/Type/Fire> , pokemon:Pokemon;
-        rdfs:label                   "Charizard"@en , "リザードン"@ja , "Lizardon"@ja-Latn;
+        rdfs:label                   "リザードン"@ja , "Lizardon"@ja-Latn , "Charizard"@en;
         pokemon:baseExperienceYield  "240"^^xsd:int;
         pokemon:catchRate            "45"^^xsd:int;
         pokemon:category             "Flame";

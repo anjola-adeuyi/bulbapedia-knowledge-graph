@@ -6,122 +6,172 @@ import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class InferenceHandler {
     private static final Logger logger = LoggerFactory.getLogger(InferenceHandler.class);
 
     public static Model addInferenceRules(Model baseModel) {
-        // Create a new model for inference
         Model inferenceModel = ModelFactory.createDefaultModel();
         inferenceModel.add(baseModel);
 
-        // Add schema.org class hierarchy
-        addTypeHierarchy(inferenceModel);
+        // Add transitive closure for subClassOf
+        addTransitiveSubClassClosure(inferenceModel);
 
-        // Add transitive properties
-        addTransitiveProperties(inferenceModel);
+        // Add transitive closure for subPropertyOf
+        addTransitiveSubPropertyClosure(inferenceModel);
 
-        logger.info("Added inference rules to model. Original size: {}, New size: {}", 
+        // Add type inference from subClassOf
+        addTypeInference(inferenceModel);
+
+        // Add owl:sameAs symmetric and transitive closure
+        addSameAsClosure(inferenceModel);
+
+        // Add property inheritance through owl:sameAs
+        addPropertyInheritance(inferenceModel);
+
+        logger.info("Added inference rules. Original size: {}, New size: {}", 
             baseModel.size(), inferenceModel.size());
-            
+        
         return inferenceModel;
     }
 
-    private static void addTypeHierarchy(Model model) {
-        // Collect all statements first
+    private static void addTransitiveSubClassClosure(Model model) {
+        boolean changed;
+        do {
+            changed = false;
+            StmtIterator iter = model.listStatements(null, RDFS.subClassOf, (RDFNode)null);
+            List<Statement> newStatements = new ArrayList<>();
+            
+            while (iter.hasNext()) {
+                Statement stmt = iter.next();
+                if (stmt.getObject().isResource()) {
+                    StmtIterator superIter = model.listStatements(
+                        stmt.getObject().asResource(), RDFS.subClassOf, (RDFNode)null);
+                    while (superIter.hasNext()) {
+                        Statement superStmt = superIter.next();
+                        if (!model.contains(stmt.getSubject(), RDFS.subClassOf, superStmt.getObject())) {
+                            newStatements.add(model.createStatement(
+                                stmt.getSubject(), RDFS.subClassOf, superStmt.getObject()));
+                            changed = true;
+                        }
+                    }
+                }
+            }
+            model.add(newStatements);
+        } while (changed);
+    }
+
+    private static void addTransitiveSubPropertyClosure(Model model) {
+        boolean changed;
+        do {
+            changed = false;
+            StmtIterator iter = model.listStatements(null, RDFS.subPropertyOf, (RDFNode)null);
+            List<Statement> newStatements = new ArrayList<>();
+            
+            while (iter.hasNext()) {
+                Statement stmt = iter.next();
+                if (stmt.getObject().isResource()) {
+                    StmtIterator superIter = model.listStatements(
+                        stmt.getObject().asResource(), RDFS.subPropertyOf, (RDFNode)null);
+                    while (superIter.hasNext()) {
+                        Statement superStmt = superIter.next();
+                        if (!model.contains(stmt.getSubject(), RDFS.subPropertyOf, superStmt.getObject())) {
+                            newStatements.add(model.createStatement(
+                                stmt.getSubject(), RDFS.subPropertyOf, superStmt.getObject()));
+                            changed = true;
+                        }
+                    }
+                }
+            }
+            model.add(newStatements);
+        } while (changed);
+    }
+
+    private static void addTypeInference(Model model) {
+        StmtIterator typeIter = model.listStatements(null, RDF.type, (RDFNode)null);
         List<Statement> newStatements = new ArrayList<>();
         
-        // Find all rdf:type statements
-        StmtIterator typeStmts = model.listStatements(null, RDF.type, (RDFNode)null);
-        while (typeStmts.hasNext()) {
-            Statement stmt = typeStmts.next();
-            if (stmt.getObject().isResource()) {
-                Resource type = stmt.getObject().asResource();
-                // Get all superclasses
-                StmtIterator superClassStmts = model.listStatements(type, RDFS.subClassOf, (RDFNode)null);
-                while (superClassStmts.hasNext()) {
-                    Statement superClassStmt = superClassStmts.next();
-                    if (superClassStmt.getObject().isResource()) {
-                        // Add instance-of relationship to superclass
-                        newStatements.add(
-                            model.createStatement(
-                                stmt.getSubject(), 
-                                RDF.type, 
-                                superClassStmt.getObject()
-                            )
-                        );
+        while (typeIter.hasNext()) {
+            Statement typeStmt = typeIter.next();
+            if (typeStmt.getObject().isResource()) {
+                StmtIterator superIter = model.listStatements(
+                    typeStmt.getObject().asResource(), RDFS.subClassOf, (RDFNode)null);
+                while (superIter.hasNext()) {
+                    Statement superStmt = superIter.next();
+                    newStatements.add(model.createStatement(
+                        typeStmt.getSubject(), RDF.type, superStmt.getObject()));
+                }
+            }
+        }
+        model.add(newStatements);
+    }
+
+    private static void addSameAsClosure(Model model) {
+        boolean changed;
+        do {
+            changed = false;
+            StmtIterator iter = model.listStatements(null, OWL.sameAs, (RDFNode)null);
+            List<Statement> newStatements = new ArrayList<>();
+            
+            while (iter.hasNext()) {
+                Statement stmt = iter.next();
+                if (stmt.getObject().isResource()) {
+                    // Symmetric
+                    if (!model.contains(stmt.getObject().asResource(), OWL.sameAs, stmt.getSubject())) {
+                        newStatements.add(model.createStatement(
+                            stmt.getObject().asResource(), OWL.sameAs, stmt.getSubject()));
+                        changed = true;
+                    }
+                    
+                    // Transitive
+                    StmtIterator transitiveIter = model.listStatements(
+                        stmt.getObject().asResource(), OWL.sameAs, (RDFNode)null);
+                    while (transitiveIter.hasNext()) {
+                        Statement transitiveStmt = transitiveIter.next();
+                        if (!model.contains(stmt.getSubject(), OWL.sameAs, transitiveStmt.getObject())) {
+                            newStatements.add(model.createStatement(
+                                stmt.getSubject(), OWL.sameAs, transitiveStmt.getObject()));
+                            changed = true;
+                        }
+                    }
+                }
+            }
+            model.add(newStatements);
+        } while (changed);
+    }
+
+    private static void addPropertyInheritance(Model model) {
+        StmtIterator sameAsIter = model.listStatements(null, OWL.sameAs, (RDFNode)null);
+        List<Statement> newStatements = new ArrayList<>();
+        
+        while (sameAsIter.hasNext()) {
+            Statement sameAsStmt = sameAsIter.next();
+            if (sameAsStmt.getObject().isResource()) {
+                Resource subject = sameAsStmt.getSubject();
+                Resource object = sameAsStmt.getObject().asResource();
+                
+                // Copy properties from subject to object
+                StmtIterator propIter = model.listStatements(subject, null, (RDFNode)null);
+                while (propIter.hasNext()) {
+                    Statement propStmt = propIter.next();
+                    if (!propStmt.getPredicate().equals(OWL.sameAs)) {
+                        newStatements.add(model.createStatement(
+                            object, propStmt.getPredicate(), propStmt.getObject()));
+                    }
+                }
+                
+                // Copy properties from object to subject
+                propIter = model.listStatements(object, null, (RDFNode)null);
+                while (propIter.hasNext()) {
+                    Statement propStmt = propIter.next();
+                    if (!propStmt.getPredicate().equals(OWL.sameAs)) {
+                        newStatements.add(model.createStatement(
+                            subject, propStmt.getPredicate(), propStmt.getObject()));
                     }
                 }
             }
         }
-        
-        // Add all collected statements
         model.add(newStatements);
-    }
-
-    private static void addTransitiveProperties(Model model) {
-        // Handle owl:sameAs transitivity
-        List<Statement> newSameAsStmts = new ArrayList<>();
-        StmtIterator sameAsStmts = model.listStatements(null, OWL.sameAs, (RDFNode)null);
-        
-        while (sameAsStmts.hasNext()) {
-            Statement stmt = sameAsStmts.next();
-            if (stmt.getObject().isResource()) {
-                Resource subject = stmt.getSubject();
-                Resource object = stmt.getObject().asResource();
-                
-                // Add inverse sameAs
-                newSameAsStmts.add(model.createStatement(object, OWL.sameAs, subject));
-                
-                // Add property sharing in both directions
-                addPropertySharing(model, subject, object, newSameAsStmts);
-                addPropertySharing(model, object, subject, newSameAsStmts);
-            }
-        }
-        
-        // Add all collected statements
-        model.add(newSameAsStmts);
-        
-        // Handle rdfs:subPropertyOf transitivity
-        List<Statement> newPropertyStmts = new ArrayList<>();
-        StmtIterator subPropStmts = model.listStatements(null, RDFS.subPropertyOf, (RDFNode)null);
-        
-        while (subPropStmts.hasNext()) {
-            Statement stmt = subPropStmts.next();
-            if (stmt.getObject().isResource()) {
-                Property subProp = stmt.getSubject().as(Property.class);
-                Property superProp = stmt.getObject().asResource().as(Property.class);
-                
-                StmtIterator instances = model.listStatements(null, subProp, (RDFNode)null);
-                while (instances.hasNext()) {
-                    Statement instance = instances.next();
-                    newPropertyStmts.add(
-                        model.createStatement(
-                            instance.getSubject(),
-                            superProp,
-                            instance.getObject()
-                        )
-                    );
-                }
-            }
-        }
-        
-        // Add all collected statements
-        model.add(newPropertyStmts);
-    }
-
-    private static void addPropertySharing(Model model, Resource r1, Resource r2, List<Statement> newStatements) {
-        StmtIterator props = model.listStatements(r1, null, (RDFNode)null);
-        while (props.hasNext()) {
-            Statement stmt = props.next();
-            if (!stmt.getPredicate().equals(OWL.sameAs)) {
-                newStatements.add(
-                    model.createStatement(r2, stmt.getPredicate(), stmt.getObject())
-                );
-            }
-        }
     }
 }
