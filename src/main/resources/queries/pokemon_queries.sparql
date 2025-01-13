@@ -30,19 +30,7 @@ WHERE {
 }
 ORDER BY ?pokemonName
 
-# Query 3: Pokemon with their Japanese and Romaji names
-PREFIX schema: <http://schema.org/>
-PREFIX pokemon: <http://example.org/pokemon/>
-
-SELECT ?name ?japaneseName ?romajiName
-WHERE {
-  ?pokemon schema:name ?name ;
-           pokemon:japaneseName ?japaneseName ;
-           pokemon:romajiName ?romajiName .
-}
-ORDER BY ?name
-
-# Query 4: Find all complete evolution chains with their types
+# Query 3: Complete evolution chains
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX pokemon: <http://example.org/pokemon/>
 PREFIX schema: <http://schema.org/>
@@ -66,56 +54,28 @@ WHERE {
 }
 ORDER BY ?stage1
 
-# Query 5: Find Pokemon with same type combinations
-PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-PREFIX pokemon: <http://example.org/pokemon/>
+# Query 4: Find Pokemon with multi-language labels
 PREFIX schema: <http://schema.org/>
-
-SELECT ?name1 ?name2 ?type1 ?type2
-WHERE {
-  ?p1 schema:name ?name1 ;
-      pokemon:primaryType ?type1 .
-  ?p2 schema:name ?name2 ;
-      pokemon:primaryType ?type1 .
-      
-  OPTIONAL {
-    ?p1 pokemon:secondaryType ?type2 .
-    ?p2 pokemon:secondaryType ?type2 .
-  }
-  
-  FILTER(?p1 != ?p2)
-}
-ORDER BY ?type1 ?type2
-
-# Query 6: Pokemon statistics with aggregation
 PREFIX pokemon: <http://example.org/pokemon/>
-PREFIX schema: <http://schema.org/>
-
-SELECT ?type (COUNT(*) as ?count) 
-       (AVG(?height) as ?avg_height) 
-       (AVG(?weight) as ?avg_weight)
-WHERE {
-  ?pokemon pokemon:primaryType ?type ;
-           schema:height ?height ;
-           schema:weight ?weight .
-}
-GROUP BY ?type
-ORDER BY DESC(?count)
-
-# Query 7: Evolution chain with ability inheritance
-PREFIX pokemon: <http://example.org/pokemon/>
-PREFIX schema: <http://schema.org/>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 
-SELECT ?base_pokemon ?base_ability ?evolved_pokemon ?evolved_ability
+SELECT ?name (GROUP_CONCAT(?label;separator="|") as ?labels)
 WHERE {
-  ?base pokemon:evolutionStage "1"^^xsd:integer ;
-         schema:name ?base_pokemon ;
-         pokemon:primaryAbility ?base_ab .
-  ?base_ab rdfs:label ?base_ability .
-  
-  ?evolved pokemon:evolvesFrom ?base ;
-          schema:name ?evolved_pokemon ;
-          pokemon:primaryAbility ?evolved_ab .
-  ?evolved_ab rdfs:label ?evolved_ability .
+  ?pokemon schema:name ?name ;
+           rdfs:label ?label .
 }
+GROUP BY ?name
+ORDER BY ?name
+
+# Query 5: Pokemon with their external links
+PREFIX schema: <http://schema.org/>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+
+SELECT ?name ?dbpedia ?wikidata
+WHERE {
+  ?pokemon schema:name ?name ;
+           owl:sameAs ?dbpedia, ?wikidata .
+  FILTER(CONTAINS(STR(?dbpedia), "dbpedia.org"))
+  FILTER(CONTAINS(STR(?wikidata), "wikidata.org"))
+}
+ORDER BY ?name

@@ -87,6 +87,10 @@ public class App {
             
             // Load data into Fuseki
             fusekiServer.loadData(combinedModel);
+
+            // Create and save enhanced SHACL shapes
+            PokemonShapes enhancedShapes = new PokemonShapes();
+            enhancedShapes.saveShapes("pokemon-shapes.ttl");
             
             // Start Linked Data interface
             LinkedDataServer ldServer = new LinkedDataServer(fusekiServer.getDataset(), 3331);

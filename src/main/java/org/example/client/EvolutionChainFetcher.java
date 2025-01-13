@@ -14,20 +14,41 @@ public class EvolutionChainFetcher {
     private static final Map<String, List<String>> EVOLUTION_CHAINS = new HashMap<>();
     
     static {
+        // Gen 1 starters
+        EVOLUTION_CHAINS.put("Bulbasaur", Arrays.asList(
+            "Bulbasaur_(Pokémon)",
+            "Ivysaur_(Pokémon)",
+            "Venusaur_(Pokémon)"
+        ));
+
+        // Gen 2 starters
+        EVOLUTION_CHAINS.put("Chikorita", Arrays.asList(
+            "Chikorita_(Pokémon)",
+            "Bayleef_(Pokémon)",
+            "Meganium_(Pokémon)"
+        ));
+
+        // Pseudo-legendaries
+        EVOLUTION_CHAINS.put("Dratini", Arrays.asList(
+            "Dratini_(Pokémon)",
+            "Dragonair_(Pokémon)",
+            "Dragonite_(Pokémon)"
+        ));
+
         // Grass starters
         EVOLUTION_CHAINS.put("Bulbasaur", Arrays.asList(
             "Bulbasaur_(Pokémon)",
             "Ivysaur_(Pokémon)",
             "Venusaur_(Pokémon)"
         ));
-        
+
         // Fire starters
         EVOLUTION_CHAINS.put("Charmander", Arrays.asList(
             "Charmander_(Pokémon)",
             "Charmeleon_(Pokémon)",
             "Charizard_(Pokémon)"
         ));
-        
+
         // Water starters
         EVOLUTION_CHAINS.put("Squirtle", Arrays.asList(
             "Squirtle_(Pokémon)",
