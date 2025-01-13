@@ -21,6 +21,10 @@ public class PokemonRDFConverter {
     private static final Property SCHEMA_HEIGHT = ResourceFactory.createProperty(SCHEMA_URI + "height");
     private static final Property SCHEMA_WEIGHT = ResourceFactory.createProperty(SCHEMA_URI + "weight");
     private static final Property SCHEMA_IDENTIFIER = ResourceFactory.createProperty(SCHEMA_URI + "identifier");
+    
+    // Define Pokemon properties
+    private static final Property POKEMON_PRIMARY_TYPE = ResourceFactory.createProperty(BASE_URI + "primaryType");
+    private static final Property POKEMON_CHARACTERISTIC = ResourceFactory.createProperty(BASE_URI + "characteristic");
 
     public Model convertToRDF(Map<String, String> pokemonInfo) {
         Model model = ModelFactory.createDefaultModel();
@@ -36,20 +40,28 @@ public class PokemonRDFConverter {
         Resource pokemonResource = model.createResource(BASE_URI + "pokemon/" + pokemonId);
 
         // Add base property hierarchy
-        Property characteristicProp = model.createProperty(BASE_URI + "characteristic");
-        SCHEMA_HEIGHT.addProperty(RDFS.subPropertyOf, characteristicProp);
-        SCHEMA_WEIGHT.addProperty(RDFS.subPropertyOf, characteristicProp);
+        SCHEMA_HEIGHT.addProperty(RDFS.subPropertyOf, POKEMON_CHARACTERISTIC);
+        SCHEMA_WEIGHT.addProperty(RDFS.subPropertyOf, POKEMON_CHARACTERISTIC);
+        POKEMON_PRIMARY_TYPE.addProperty(RDFS.subPropertyOf, POKEMON_CHARACTERISTIC);
 
-        // Add type hierarchy
+        // Create Pokemon class
         Resource pokemonClass = model.createResource(BASE_URI + "Pokemon");
-        pokemonResource.addProperty(RDF.type, pokemonClass);
 
+        // Create and add type hierarchy class
         if (pokemonInfo.containsKey("type1")) {
             String type = pokemonInfo.get("type1");
             Resource typeClass = model.createResource(BASE_URI + "Type/" + type);
+            
+            // Add type hierarchy
             typeClass.addProperty(RDFS.subClassOf, pokemonClass);
+            typeClass.addProperty(POKEMON_PRIMARY_TYPE, type);
+            
+            // Add Pokemon to this type class
             pokemonResource.addProperty(RDF.type, typeClass);
         }
+
+        // Always add base Pokemon type
+        pokemonResource.addProperty(RDF.type, pokemonClass);
 
         // Add DBpedia and Wikidata links
         String name = pokemonInfo.get("name");
@@ -58,14 +70,14 @@ public class PokemonRDFConverter {
             String dbpediaUri = "http://dbpedia.org/resource/" + name.replace(" ", "_");
             Resource dbpediaResource = model.createResource(dbpediaUri);
             pokemonResource.addProperty(OWL.sameAs, dbpediaResource);
-            dbpediaResource.addProperty(SCHEMA_NAME, name);
+            dbpediaResource.addProperty(SCHEMA_NAME, name, "en");
 
             // Wikidata link
             String wikidataId = getWikidataId(name);
             if (wikidataId != null) {
                 Resource wikidataResource = model.createResource("http://www.wikidata.org/entity/" + wikidataId);
                 pokemonResource.addProperty(OWL.sameAs, wikidataResource);
-                wikidataResource.addProperty(SCHEMA_NAME, name);
+                wikidataResource.addProperty(SCHEMA_NAME, name, "en");
             }
         }
 
@@ -81,8 +93,7 @@ public class PokemonRDFConverter {
         if (pokemonInfo.containsKey("evolutionStage")) {
             try {
                 int stage = Integer.parseInt(pokemonInfo.get("evolutionStage"));
-                Property evolutionStageProp = model.createProperty(BASE_URI + "evolutionStage");
-                evolutionStageProp.addProperty(RDFS.subPropertyOf, characteristicProp);
+                Property evolutionStageProp = createCharacteristicProperty(model, BASE_URI + "evolutionStage");
                 pokemonResource.addProperty(
                     evolutionStageProp,
                     model.createTypedLiteral(stage, XSD.integer.getURI())
@@ -113,10 +124,7 @@ public class PokemonRDFConverter {
         addCharacteristicProperty(model, pokemonResource, BASE_URI + "category", category);
 
         // Types
-        Property typeProp = model.createProperty(BASE_URI + "primaryType");
-        typeProp.addProperty(RDFS.subPropertyOf, characteristicProp);
         addCharacteristicProperty(model, pokemonResource, BASE_URI + "primaryType", pokemonInfo.get("type1"));
-        
         if (pokemonInfo.containsKey("type2")) {
             addCharacteristicProperty(model, pokemonResource, BASE_URI + "secondaryType", pokemonInfo.get("type2"));
         }
@@ -132,7 +140,7 @@ public class PokemonRDFConverter {
                 pokemonInfo.get("ability1").toLowerCase().replace(" ", "_"))
                 .addProperty(RDFS.label, pokemonInfo.get("ability1"));
             pokemonResource.addProperty(
-                model.createProperty(BASE_URI + "primaryAbility"), 
+                createCharacteristicProperty(model, BASE_URI + "primaryAbility"),
                 ability
             );
         }
@@ -140,10 +148,15 @@ public class PokemonRDFConverter {
         return model;
     }
 
+    private Property createCharacteristicProperty(Model model, String uri) {
+        Property prop = model.createProperty(uri);
+        prop.addProperty(RDFS.subPropertyOf, POKEMON_CHARACTERISTIC);
+        return prop;
+    }
+
     private void addCharacteristicProperty(Model model, Resource resource, String propertyUri, String value) {
         if (value != null && !value.isEmpty()) {
-            Property property = model.createProperty(propertyUri);
-            property.addProperty(RDFS.subPropertyOf, model.createProperty(BASE_URI + "characteristic"));
+            Property property = createCharacteristicProperty(model, propertyUri);
             resource.addProperty(property, value);
         }
     }
@@ -163,8 +176,7 @@ public class PokemonRDFConverter {
         if (value != null && !value.isEmpty()) {
             try {
                 int numericValue = Integer.parseInt(value);
-                Property property = model.createProperty(propertyUri);
-                property.addProperty(RDFS.subPropertyOf, model.createProperty(BASE_URI + "characteristic"));
+                Property property = createCharacteristicProperty(model, propertyUri);
                 resource.addProperty(property, 
                     model.createTypedLiteral(numericValue, XSD.xint.getURI()));
             } catch (NumberFormatException e) {
