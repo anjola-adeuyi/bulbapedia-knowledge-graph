@@ -79,3 +79,73 @@ WHERE {
   FILTER(CONTAINS(STR(?wikidata), "wikidata.org"))
 }
 ORDER BY ?name
+
+# Query 6: Find all Pokemon names including those from owl:sameAs links
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX schema: <http://schema.org/>
+SELECT DISTINCT ?name ?altName
+WHERE {
+  ?pokemon schema:name ?name ;
+          owl:sameAs* ?same .
+  ?same schema:name ?altName .
+  FILTER(?name != ?altName)
+}
+ORDER BY ?name
+
+# Query 7: Get all Pokemon types including inferred ones from subclass relationships
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX pokemon: <http://example.org/pokemon/>
+PREFIX schema: <http://schema.org/>
+SELECT ?name ?baseType ?inheritedType
+WHERE {
+  ?pokemon schema:name ?name ;
+           pokemon:primaryType ?baseType .
+  ?pokemon rdfs:subClassOf* ?parent .
+  ?parent pokemon:primaryType ?inheritedType .
+  FILTER(?baseType != ?inheritedType)
+}
+ORDER BY ?name
+
+# Query 8: Find all equivalent Pokemon across different sources
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX schema: <http://schema.org/>
+SELECT ?pokemonName ?source ?externalId
+WHERE {
+  ?pokemon schema:name ?pokemonName ;
+          owl:sameAs* ?external .
+  BIND(
+    IF(CONTAINS(STR(?external), "dbpedia"), "DBpedia",
+    IF(CONTAINS(STR(?external), "wikidata"), "Wikidata",
+    "Other")) AS ?source)
+  BIND(REPLACE(STR(?external), "^.*/([^/]*)$", "$1") AS ?externalId)
+}
+ORDER BY ?pokemonName ?source
+
+# Query 9: Get evolution chains with inherited properties
+PREFIX pokemon: <http://example.org/pokemon/>
+PREFIX schema: <http://schema.org/>
+SELECT ?baseName ?evolvedName ?commonType
+WHERE {
+  ?base schema:name ?baseName ;
+        pokemon:primaryType ?commonType .
+  ?evolved pokemon:evolvesFrom+ ?base ;
+           schema:name ?evolvedName ;
+           pokemon:primaryType ?commonType .
+}
+ORDER BY ?baseName ?evolvedName
+
+# Query 10: Find Pokemon with shared characteristics through inference
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX pokemon: <http://example.org/pokemon/>
+PREFIX schema: <http://schema.org/>
+SELECT ?name1 ?name2 ?sharedProperty ?value
+WHERE {
+  ?pokemon1 schema:name ?name1 ;
+            ?sharedProperty ?value .
+  ?pokemon2 schema:name ?name2 ;
+            ?sharedProperty ?value .
+  ?sharedProperty rdfs:subPropertyOf* pokemon:characteristic .
+  FILTER(?pokemon1 != ?pokemon2)
+  FILTER(?sharedProperty != schema:name)
+}
+ORDER BY ?name1 ?name2

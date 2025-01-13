@@ -5,6 +5,7 @@ import org.apache.jena.fuseki.server.Operation;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.rdf.model.Model;
+import org.example.inference.InferenceHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,18 +63,33 @@ public class PokemonFusekiServer {
     }
 
     public void loadData(Model model) {
-        dataset.getDefaultModel().removeAll();
-        dataset.getDefaultModel().add(model);
-        logger.info("Loaded {} triples into the default graph", model.size());
+        // Add inference rules to the model
+        Model inferenceModel = InferenceHandler.addInferenceRules(model);
         
-        // Log a sample query to test the data
-        logger.info("\nData loaded successfully. Try this query to verify:");
-        logger.info("PREFIX schema: <http://schema.org/>\n" +
-                   "PREFIX pokemon: <http://example.org/pokemon/>\n" +
-                   "SELECT * WHERE {\n" +
-                   "  ?s schema:name ?name ;\n" +
-                   "     pokemon:primaryType ?type .\n" +
-                   "} LIMIT 5");
+        // Clear existing data
+        dataset.getDefaultModel().removeAll();
+        
+        // Add the inference model
+        dataset.getDefaultModel().add(inferenceModel);
+        
+        logger.info("Loaded {} triples into the default graph", inferenceModel.size());
+        logger.info("Model includes inferred statements from:");
+        logger.info("- owl:sameAs relationships");
+        logger.info("- RDFS subclass hierarchy");
+        logger.info("- Property inheritance");
+        
+        // Log sample query
+        logger.info("\nData loaded successfully. Try this query to test inference:");
+        logger.info("PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>");
+        logger.info("PREFIX owl: <http://www.w3.org/2002/07/owl#>");
+        logger.info("PREFIX pokemon: <http://example.org/pokemon/>");
+        logger.info("SELECT ?pokemon ?name ?type WHERE {");
+        logger.info("  ?pokemon rdfs:subClassOf* pokemon:Pokemon ;");
+        logger.info("           owl:sameAs* ?equiv .");
+        logger.info("  { ?pokemon schema:name ?name } UNION");
+        logger.info("  { ?equiv schema:name ?name }");
+        logger.info("  ?pokemon pokemon:primaryType ?type");
+        logger.info("} LIMIT 5");
     }
 
     public Dataset getDataset() {

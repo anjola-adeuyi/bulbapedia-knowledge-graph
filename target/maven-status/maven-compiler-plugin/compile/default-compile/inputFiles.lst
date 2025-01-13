@@ -2,6 +2,7 @@
 /Users/anjolaoluwaadeuyi/Documents/CPS2/Master 2 (M2)/Semantic web/SW Project/bulbapedia-kg/src/main/java/org/example/server/LinkedDataServer.java
 /Users/anjolaoluwaadeuyi/Documents/CPS2/Master 2 (M2)/Semantic web/SW Project/bulbapedia-kg/src/main/java/org/example/validation/RDFValidator.java
 /Users/anjolaoluwaadeuyi/Documents/CPS2/Master 2 (M2)/Semantic web/SW Project/bulbapedia-kg/src/main/java/org/example/server/EndpointTester.java
+/Users/anjolaoluwaadeuyi/Documents/CPS2/Master 2 (M2)/Semantic web/SW Project/bulbapedia-kg/src/main/java/org/example/inference/InferenceHandler.java
 /Users/anjolaoluwaadeuyi/Documents/CPS2/Master 2 (M2)/Semantic web/SW Project/bulbapedia-kg/src/main/java/org/example/rdf/PokemonRDFGenerator.java
 /Users/anjolaoluwaadeuyi/Documents/CPS2/Master 2 (M2)/Semantic web/SW Project/bulbapedia-kg/src/main/java/org/example/App.java
 /Users/anjolaoluwaadeuyi/Documents/CPS2/Master 2 (M2)/Semantic web/SW Project/bulbapedia-kg/src/main/java/org/example/client/EvolutionChainFetcher.java

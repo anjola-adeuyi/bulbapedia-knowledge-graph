@@ -6,6 +6,7 @@ org/example/server/PokemonFusekiServer.class
 org/example/validation/RDFValidator.class
 org/example/client/BulbapediaClient.class
 org/example/parser/WikiInfoboxParser.class
+org/example/inference/InferenceHandler.class
 org/example/rdf/PokemonRDFGenerator.class
 org/example/App.class
 org/example/validation/PokemonShapes.class

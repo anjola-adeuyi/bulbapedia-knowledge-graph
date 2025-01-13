@@ -121,9 +121,33 @@ public class App {
                        "           pokemon:evolutionStage ?stage .\n" +
                        "  OPTIONAL { ?pokemon pokemon:evolvesFrom ?evolves_from }\n" +
                        "} ORDER BY ?stage");
+
+            // Add example inference queries
+            logger.info("\nExample inference queries to try:");
+            logger.info("\n1. Find Pokemon and their equivalent resources:");
+            logger.info("PREFIX owl: <http://www.w3.org/2002/07/owl#>\n" +
+                       "PREFIX schema: <http://schema.org/>\n" +
+                       "SELECT ?name ?altName WHERE {\n" +
+                       "  ?pokemon schema:name ?name ;\n" +
+                       "          owl:sameAs* ?same .\n" +
+                       "  ?same schema:name ?altName .\n" +
+                       "  FILTER(?name != ?altName)\n" +
+                       "} ORDER BY ?name");
+            
+            logger.info("\n2. Get evolution chains with inherited properties:");
+            logger.info("PREFIX pokemon: <http://example.org/pokemon/>\n" +
+                       "PREFIX schema: <http://schema.org/>\n" +
+                       "SELECT ?baseName ?evolvedName ?commonType WHERE {\n" +
+                       "  ?base schema:name ?baseName ;\n" +
+                       "        pokemon:primaryType ?commonType .\n" +
+                       "  ?evolved pokemon:evolvesFrom+ ?base ;\n" +
+                       "           schema:name ?evolvedName ;\n" +
+                       "           pokemon:primaryType ?commonType .\n" +
+                       "} ORDER BY ?baseName ?evolvedName");
             
             // Keep the server running
-            logger.info("\nServer is running. Use POST requests to /pokemon/query endpoint");
+            logger.info("\nServer is running with inference enabled.");
+            logger.info("Use POST requests to /pokemon/query endpoint");
             logger.info("Press Enter to stop the server...");
             System.in.read();
             
