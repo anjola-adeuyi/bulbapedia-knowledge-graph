@@ -103,62 +103,124 @@ public class InferenceHandler {
       } while (changed);
   }
 
-    private static void addTypeHierarchyInference(Model model) {
+  private static void addTypeHierarchyInference(Model model) {
+      logger.info("Adding type hierarchy inference...");
+      
       // Add Pokemon type hierarchy
       Resource pokemonClass = model.createResource(BASE_URI + "Pokemon");
-
+      
       // Define all Pokemon types
       String[] types = {
           "Normal", "Fire", "Water", "Electric", "Grass", "Ice", 
           "Fighting", "Poison", "Ground", "Flying", "Psychic", "Bug", 
           "Rock", "Ghost", "Dragon", "Dark", "Steel", "Fairy"
       };
-
+      
       // Create type classes with hierarchy
-      Map<String, Resource> typeClasses = new HashMap<>();
       for (String type : types) {
+          // Create type class
           Resource typeClass = model.createResource(BASE_URI + "Type/" + type);
-          typeClasses.put(type, typeClass);
           
           // Make type a subclass of Pokemon
           typeClass.addProperty(RDFS.subClassOf, pokemonClass);
-          typeClass.addProperty(model.createProperty(BASE_URI + "primaryType"), type);
-      }
-
-      // Find all Pokemon and establish their type relationships
-      StmtIterator pokemonIter = model.listStatements(null, 
-          model.createProperty(BASE_URI + "primaryType"), (RDFNode)null);
-
-      while (pokemonIter.hasNext()) {
-          Statement stmt = pokemonIter.next();
-          Resource pokemon = stmt.getSubject();
-          String type = stmt.getObject().toString();
           
-          // Create specific type class for this Pokemon
-          Resource specificType = model.createResource(pokemon.getURI() + "/type");
-          specificType.addProperty(RDFS.subClassOf, typeClasses.get(type));
-          specificType.addProperty(model.createProperty(BASE_URI + "primaryType"), type);
+          // Add primary type as a characteristic
+          Property primaryType = model.createProperty(BASE_URI + "primaryType");
+          typeClass.addProperty(primaryType, type);
           
-          // Link Pokemon to its specific type and the general type class
-          pokemon.addProperty(RDFS.subClassOf, specificType);
-          pokemon.addProperty(RDFS.subClassOf, typeClasses.get(type));
-          pokemon.addProperty(RDF.type, specificType);
-          pokemon.addProperty(RDF.type, typeClasses.get(type));
-          pokemon.addProperty(RDF.type, pokemonClass);
+          // Find all Pokemon of this type
+          StmtIterator pokemonIter = model.listStatements(null, primaryType, type);
+          while (pokemonIter.hasNext()) {
+              Statement stmt = pokemonIter.next();
+              Resource pokemon = stmt.getSubject();
+              
+              // Create instance-specific type class
+              Resource instanceType = model.createResource(pokemon.getURI() + "/type");
+              
+              // Add type class relationships
+              instanceType.addProperty(RDFS.subClassOf, typeClass);
+              instanceType.addProperty(primaryType, type);
+              
+              // Link Pokemon to its types
+              pokemon.addProperty(RDF.type, instanceType);
+              pokemon.addProperty(RDF.type, typeClass);
+              pokemon.addProperty(RDF.type, pokemonClass);
+              pokemon.addProperty(RDFS.subClassOf, typeClass);  // Direct subclass relationship
+              
+              logger.debug("Added type relationships for {}: {} -> {} -> {}", 
+                  pokemon.getLocalName(), instanceType.getLocalName(), 
+                  typeClass.getLocalName(), pokemonClass.getLocalName());
+          }
       }
-    }
-
+  }
+    // In InferenceHandler.java, modify addInferenceRules:
     public static Model addInferenceRules(Model baseModel) {
       Model inferenceModel = ModelFactory.createDefaultModel();
       inferenceModel.add(baseModel);
       
+      logger.info("Starting inference with {} statements", baseModel.size());
+      
       // Add inference rules in specific order
       addTypeHierarchyInference(inferenceModel);
+      logger.info("After type hierarchy: {} statements", inferenceModel.size());
+      
       addSameAsInference(inferenceModel);
+      logger.info("After sameAs inference: {} statements", inferenceModel.size());
+      
       addPropertyInheritance(inferenceModel);
+      logger.info("After property inheritance: {} statements", inferenceModel.size());
+      
       addCharacteristicHierarchy(inferenceModel);
+      logger.info("After characteristic hierarchy: {} statements", inferenceModel.size());
+
+      // Debug statements to verify data
+      debugVerifyTypes(inferenceModel);
+      debugVerifySameAs(inferenceModel);
       
       return inferenceModel;
+    }
+
+    private static void debugVerifyTypes(Model model) {
+      logger.info("Verifying type relationships...");
+      StmtIterator typeIter = model.listStatements(null, RDF.type, (RDFNode)null);
+      while (typeIter.hasNext()) {
+          Statement stmt = typeIter.next();
+          logger.debug("Type relationship: {} -> {}", 
+              stmt.getSubject().getLocalName(),
+              stmt.getObject().asResource().getLocalName());
+      }
+      
+      StmtIterator subclassIter = model.listStatements(null, RDFS.subClassOf, (RDFNode)null);
+      while (subclassIter.hasNext()) {
+          Statement stmt = subclassIter.next();
+          logger.debug("Subclass relationship: {} -> {}", 
+              stmt.getSubject().getLocalName(),
+              stmt.getObject().asResource().getLocalName());
+      }
+    }
+
+    private static void debugVerifySameAs(Model model) {
+      logger.info("Verifying sameAs relationships...");
+      StmtIterator sameAsIter = model.listStatements(null, OWL.sameAs, (RDFNode)null);
+      while (sameAsIter.hasNext()) {
+          Statement stmt = sameAsIter.next();
+          logger.debug("sameAs relationship: {} -> {}", 
+              stmt.getSubject().getLocalName(),
+              stmt.getObject().asResource().getLocalName());
+          
+          // Check if both resources have schema:name
+          StmtIterator nameIter1 = stmt.getSubject().listProperties(
+              model.createProperty(SCHEMA_URI + "name"));
+          StmtIterator nameIter2 = stmt.getObject().asResource().listProperties(
+              model.createProperty(SCHEMA_URI + "name"));
+          
+          while (nameIter1.hasNext()) {
+              logger.debug("Subject name: {}", nameIter1.next().getString());
+          }
+          while (nameIter2.hasNext()) {
+              logger.debug("Object name: {}", nameIter2.next().getString());
+          }
+      }
     }
 
     private static void addPropertyInheritance(Model model) {

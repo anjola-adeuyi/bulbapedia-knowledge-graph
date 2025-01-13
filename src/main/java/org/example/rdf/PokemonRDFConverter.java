@@ -143,30 +143,34 @@ public class PokemonRDFConverter {
     private void addExternalLinks(Model model, Resource resource, Map<String, String> pokemonInfo) {
         String name = pokemonInfo.get("name");
         if (name != null) {
-            // Add DBpedia link
-            String dbpediaUri = "http://dbpedia.org/resource/" + name.replace(" ", "_");
-            Resource dbpediaResource = model.createResource(dbpediaUri);
-            dbpediaResource.addProperty(SCHEMA_NAME, name); // Add name explicitly
-            resource.addProperty(OWL.sameAs, dbpediaResource);
+            Property schemaName = model.createProperty(SCHEMA_URI + "name");
             
-            // Add Wikidata link if available
+            // DBpedia
+            String dbpediaUri = "http://dbpedia.org/resource/" + name.replace(" ", "_");
+            Resource dbpedia = model.createResource(dbpediaUri);
+            dbpedia.addProperty(schemaName, name);
+            resource.addProperty(OWL.sameAs, dbpedia);
+            logger.debug("Added DBpedia link for {}: {}", name, dbpediaUri);
+    
+            // Wikidata
             String wikidataId = getWikidataId(name);
             if (wikidataId != null) {
                 String wikidataUri = "http://www.wikidata.org/entity/" + wikidataId;
-                Resource wikidataResource = model.createResource(wikidataUri);
-                wikidataResource.addProperty(SCHEMA_NAME, name); // Add name explicitly
-                resource.addProperty(OWL.sameAs, wikidataResource);
-                
-                // Also link DBpedia and Wikidata resources
-                dbpediaResource.addProperty(OWL.sameAs, wikidataResource);
+                Resource wikidata = model.createResource(wikidataUri);
+                wikidata.addProperty(schemaName, name);
+                resource.addProperty(OWL.sameAs, wikidata);
+                // Link DBpedia and Wikidata directly
+                dbpedia.addProperty(OWL.sameAs, wikidata);
+                logger.debug("Added Wikidata link for {}: {}", name, wikidataUri);
             }
-            
-            // Add Bulbapedia link
+    
+            // Bulbapedia
             String bulbapediaUri = "https://bulbapedia.bulbagarden.net/wiki/" + 
                 name.replace(" ", "_") + "_(Pokémon)";
-            Resource bulbapediaResource = model.createResource(bulbapediaUri);
-            bulbapediaResource.addProperty(SCHEMA_NAME, name); // Add name explicitly
-            resource.addProperty(OWL.sameAs, bulbapediaResource);
+            Resource bulbapedia = model.createResource(bulbapediaUri);
+            bulbapedia.addProperty(schemaName, name);
+            resource.addProperty(OWL.sameAs, bulbapedia);
+            logger.debug("Added Bulbapedia link for {}: {}", name, bulbapediaUri);
         }
     }
 
