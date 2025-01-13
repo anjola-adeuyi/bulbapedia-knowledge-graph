@@ -143,30 +143,30 @@ public class PokemonRDFConverter {
     private void addExternalLinks(Model model, Resource resource, Map<String, String> pokemonInfo) {
         String name = pokemonInfo.get("name");
         if (name != null) {
-            // Add DBpedia link with name
+            // Add DBpedia link
             String dbpediaUri = "http://dbpedia.org/resource/" + name.replace(" ", "_");
             Resource dbpediaResource = model.createResource(dbpediaUri);
-            // Add name to DBpedia resource
-            dbpediaResource.addProperty(SCHEMA_NAME, name);
+            dbpediaResource.addProperty(SCHEMA_NAME, name); // Add name explicitly
             resource.addProperty(OWL.sameAs, dbpediaResource);
-    
+            
             // Add Wikidata link if available
             String wikidataId = getWikidataId(name);
             if (wikidataId != null) {
                 String wikidataUri = "http://www.wikidata.org/entity/" + wikidataId;
                 Resource wikidataResource = model.createResource(wikidataUri);
-                // Add name to Wikidata resource
-                wikidataResource.addProperty(SCHEMA_NAME, name);
+                wikidataResource.addProperty(SCHEMA_NAME, name); // Add name explicitly
                 resource.addProperty(OWL.sameAs, wikidataResource);
+                
+                // Also link DBpedia and Wikidata resources
+                dbpediaResource.addProperty(OWL.sameAs, wikidataResource);
             }
-    
+            
             // Add Bulbapedia link
             String bulbapediaUri = "https://bulbapedia.bulbagarden.net/wiki/" + 
                 name.replace(" ", "_") + "_(Pokémon)";
             Resource bulbapediaResource = model.createResource(bulbapediaUri);
-            // Add name to Bulbapedia resource
-            bulbapediaResource.addProperty(SCHEMA_NAME, name);
-            resource.addProperty(model.createProperty(SCHEMA_URI + "sameAs"), bulbapediaResource);
+            bulbapediaResource.addProperty(SCHEMA_NAME, name); // Add name explicitly
+            resource.addProperty(OWL.sameAs, bulbapediaResource);
         }
     }
 

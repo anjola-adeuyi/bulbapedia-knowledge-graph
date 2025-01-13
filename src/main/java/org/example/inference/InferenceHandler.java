@@ -58,7 +58,6 @@ public class InferenceHandler {
     }
 
     private static void addSameAsInference(Model model) {
-      // Add symmetric and transitive closure for owl:sameAs
       boolean changed;
       do {
           changed = false;
@@ -70,37 +69,39 @@ public class InferenceHandler {
               Resource subject = stmt.getSubject();
               Resource object = stmt.getObject().asResource();
               
-              // Symmetric property
+              // Symmetric
               if (!model.contains(object, OWL.sameAs, subject)) {
                   newStatements.add(model.createStatement(object, OWL.sameAs, subject));
                   changed = true;
               }
               
-              // Transfer schema:name properties
-              StmtIterator nameIter = subject.listProperties(model.createProperty(SCHEMA_URI + "name"));
-              while (nameIter.hasNext()) {
-                  Statement nameStmt = nameIter.next();
-                  if (!model.contains(object, nameStmt.getPredicate(), nameStmt.getObject())) {
-                      newStatements.add(model.createStatement(
-                          object, nameStmt.getPredicate(), nameStmt.getObject()));
-                      changed = true;
+              // Copy all properties (not just schema:name)
+              StmtIterator subjectProps = subject.listProperties();
+              while (subjectProps.hasNext()) {
+                  Statement propStmt = subjectProps.next();
+                  if (!propStmt.getPredicate().equals(OWL.sameAs)) {
+                      if (!model.contains(object, propStmt.getPredicate(), propStmt.getObject())) {
+                          newStatements.add(model.createStatement(
+                              object, propStmt.getPredicate(), propStmt.getObject()));
+                          changed = true;
+                      }
                   }
               }
               
-              // Transitive property
-              StmtIterator sameAsIter = object.listProperties(OWL.sameAs);
+              // Transitive
+              StmtIterator sameAsIter = model.listStatements(object, OWL.sameAs, (RDFNode)null);
               while (sameAsIter.hasNext()) {
-                  Statement transitiveStmt = sameAsIter.next();
-                  if (!model.contains(subject, OWL.sameAs, transitiveStmt.getObject())) {
+                  Statement sameAsStmt = sameAsIter.next();
+                  if (!model.contains(subject, OWL.sameAs, sameAsStmt.getObject())) {
                       newStatements.add(model.createStatement(
-                          subject, OWL.sameAs, transitiveStmt.getObject()));
+                          subject, OWL.sameAs, sameAsStmt.getObject()));
                       changed = true;
                   }
               }
           }
           model.add(newStatements);
       } while (changed);
-    }
+  }
 
     private static void addTypeHierarchyInference(Model model) {
       // Add Pokemon type hierarchy
@@ -112,40 +113,39 @@ public class InferenceHandler {
           "Fighting", "Poison", "Ground", "Flying", "Psychic", "Bug", 
           "Rock", "Ghost", "Dragon", "Dark", "Steel", "Fairy"
       };
-      
-      // Create type classes with hierarchy
-      for (String type : types) {
-          // Create type class
-          Resource typeClass = model.createResource(BASE_URI + "Type/" + type);
 
+      // Create type classes with hierarchy
+      Map<String, Resource> typeClasses = new HashMap<>();
+      for (String type : types) {
+          Resource typeClass = model.createResource(BASE_URI + "Type/" + type);
+          typeClasses.put(type, typeClass);
+          
           // Make type a subclass of Pokemon
           typeClass.addProperty(RDFS.subClassOf, pokemonClass);
-          
-          // Add primary type as a characteristic
-          Property primaryType = model.createProperty(BASE_URI + "primaryType");
-          typeClass.addProperty(primaryType, type);
-          
-          // Find all Pokemon of this type and establish relationships
-          StmtIterator pokemonIter = model.listStatements(null, primaryType, type);
-          while (pokemonIter.hasNext()) {
-              Statement stmt = pokemonIter.next();
-              Resource pokemon = stmt.getSubject();
-              
-              // Add type class membership
-              pokemon.addProperty(RDF.type, typeClass);
-              
-              // Add inherited type from Pokemon class
-              pokemon.addProperty(RDF.type, pokemonClass);
-              
-              // Explicitly add subclass relationship
-              Resource pokemonType = model.createResource(BASE_URI + pokemon.getLocalName() + "/type");
-              pokemonType.addProperty(RDFS.subClassOf, typeClass);
-              pokemon.addProperty(RDF.type, pokemonType);
-          }
+          typeClass.addProperty(model.createProperty(BASE_URI + "primaryType"), type);
       }
-      
-      // Add transitive closure for type hierarchy
-      addTransitiveSubClassClosure(model);
+
+      // Find all Pokemon and establish their type relationships
+      StmtIterator pokemonIter = model.listStatements(null, 
+          model.createProperty(BASE_URI + "primaryType"), (RDFNode)null);
+
+      while (pokemonIter.hasNext()) {
+          Statement stmt = pokemonIter.next();
+          Resource pokemon = stmt.getSubject();
+          String type = stmt.getObject().toString();
+          
+          // Create specific type class for this Pokemon
+          Resource specificType = model.createResource(pokemon.getURI() + "/type");
+          specificType.addProperty(RDFS.subClassOf, typeClasses.get(type));
+          specificType.addProperty(model.createProperty(BASE_URI + "primaryType"), type);
+          
+          // Link Pokemon to its specific type and the general type class
+          pokemon.addProperty(RDFS.subClassOf, specificType);
+          pokemon.addProperty(RDFS.subClassOf, typeClasses.get(type));
+          pokemon.addProperty(RDF.type, specificType);
+          pokemon.addProperty(RDF.type, typeClasses.get(type));
+          pokemon.addProperty(RDF.type, pokemonClass);
+      }
     }
 
     public static Model addInferenceRules(Model baseModel) {
