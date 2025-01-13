@@ -39,24 +39,36 @@ public class PokemonRDFConverter {
         String pokemonId = pokemonInfo.getOrDefault("ndex", "0000");
         Resource pokemonResource = model.createResource(BASE_URI + "pokemon/" + pokemonId);
 
-        // Add base property hierarchy
-        SCHEMA_HEIGHT.addProperty(RDFS.subPropertyOf, POKEMON_CHARACTERISTIC);
-        SCHEMA_WEIGHT.addProperty(RDFS.subPropertyOf, POKEMON_CHARACTERISTIC);
-        POKEMON_PRIMARY_TYPE.addProperty(RDFS.subPropertyOf, POKEMON_CHARACTERISTIC);
+        // Create characteristic property hierarchy
+        Property characteristicProp = POKEMON_CHARACTERISTIC;
+
+        // Register all characteristic properties
+        Property[] characteristicProps = {
+            SCHEMA_HEIGHT,
+            SCHEMA_WEIGHT,
+            POKEMON_PRIMARY_TYPE,
+            createCharacteristicProperty(model, BASE_URI + "japaneseName"),
+            createCharacteristicProperty(model, BASE_URI + "romajiName"),
+            createCharacteristicProperty(model, BASE_URI + "category")
+        };
+        for (Property prop : characteristicProps) {
+            prop.addProperty(RDFS.subPropertyOf, characteristicProp);
+        }
 
         // Create Pokemon class
         Resource pokemonClass = model.createResource(BASE_URI + "Pokemon");
 
-        // Create and add type hierarchy class
         if (pokemonInfo.containsKey("type1")) {
             String type = pokemonInfo.get("type1");
+            // Create type class with proper hierarchy
             Resource typeClass = model.createResource(BASE_URI + "Type/" + type);
-            
-            // Add type hierarchy
             typeClass.addProperty(RDFS.subClassOf, pokemonClass);
-            typeClass.addProperty(POKEMON_PRIMARY_TYPE, type);
             
-            // Add Pokemon to this type class
+            // Add type info to both class and instance
+            typeClass.addProperty(POKEMON_PRIMARY_TYPE, ResourceFactory.createPlainLiteral(type));
+            pokemonResource.addProperty(POKEMON_PRIMARY_TYPE, type);
+            
+            // Add type relationships
             pokemonResource.addProperty(RDF.type, typeClass);
         }
 
@@ -66,18 +78,22 @@ public class PokemonRDFConverter {
         // Add DBpedia and Wikidata links
         String name = pokemonInfo.get("name");
         if (name != null) {
-            // DBpedia link
-            String dbpediaUri = "http://dbpedia.org/resource/" + name.replace(" ", "_");
-            Resource dbpediaResource = model.createResource(dbpediaUri);
-            pokemonResource.addProperty(OWL.sameAs, dbpediaResource);
-            dbpediaResource.addProperty(SCHEMA_NAME, name, "en");
+          // DBpedia link
+          String dbpediaUri = "http://dbpedia.org/resource/" + name.replace(" ", "_");
+          Resource dbpediaResource = model.createResource(dbpediaUri);
+          // Add direct properties to DBpedia resource first
+          dbpediaResource.addProperty(SCHEMA_NAME, name);
+          // Then link with owl:sameAs
+          pokemonResource.addProperty(OWL.sameAs, dbpediaResource);
 
-            // Wikidata link
-            String wikidataId = getWikidataId(name);
-            if (wikidataId != null) {
-                Resource wikidataResource = model.createResource("http://www.wikidata.org/entity/" + wikidataId);
-                pokemonResource.addProperty(OWL.sameAs, wikidataResource);
-                wikidataResource.addProperty(SCHEMA_NAME, name, "en");
+          // Wikidata link
+          String wikidataId = getWikidataId(name);
+          if (wikidataId != null) {
+              Resource wikidataResource = model.createResource("http://www.wikidata.org/entity/" + wikidataId);
+              // Add direct properties to Wikidata resource
+              wikidataResource.addProperty(SCHEMA_NAME, name);
+              // Then link with owl:sameAs
+              pokemonResource.addProperty(OWL.sameAs, wikidataResource);
             }
         }
 
@@ -144,6 +160,9 @@ public class PokemonRDFConverter {
                 ability
             );
         }
+
+        logger.debug("Generated triples for {}: {}", pokemonInfo.get("name"), model.size());
+        model.write(System.out, "TURTLE"); // Temporarily add this to see generated RDF
 
         return model;
     }
