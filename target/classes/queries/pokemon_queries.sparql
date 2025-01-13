@@ -30,7 +30,9 @@ WHERE {
 }
 ORDER BY ?pokemonName
 
+# TO FIX
 # Query 3: Complete evolution chains
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX pokemon: <http://example.org/pokemon/>
 PREFIX schema: <http://schema.org/>
@@ -80,6 +82,7 @@ WHERE {
 }
 ORDER BY ?name
 
+# TO FIX
 # Query 6: Find all Pokemon names including those from owl:sameAs links
 PREFIX owl: <http://www.w3.org/2002/07/owl#>
 PREFIX schema: <http://schema.org/>
@@ -92,6 +95,7 @@ WHERE {
 }
 ORDER BY ?name
 
+# TO FIX
 # Query 7: Get all Pokemon types including inferred ones from subclass relationships
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX pokemon: <http://example.org/pokemon/>
@@ -134,6 +138,7 @@ WHERE {
 }
 ORDER BY ?baseName ?evolvedName
 
+# TO FIX
 # Query 10: Find Pokemon with shared characteristics through inference
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX pokemon: <http://example.org/pokemon/>

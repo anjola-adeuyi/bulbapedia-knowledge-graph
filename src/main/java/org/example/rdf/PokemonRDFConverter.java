@@ -1,6 +1,7 @@
 package org.example.rdf;
 
 import org.apache.jena.rdf.model.*;
+import org.apache.jena.vocabulary.OWL;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.XSD;
@@ -23,8 +24,22 @@ public class PokemonRDFConverter {
 
         // Create resource for the Pokemon
         String pokemonId = pokemonInfo.getOrDefault("ndex", "0000");
-        Resource pokemonResource = model.createResource(BASE_URI + "pokemon/" + pokemonId)
-            .addProperty(RDF.type, model.createResource(BASE_URI + "Pokemon"));
+        Resource pokemonResource = model.createResource(BASE_URI + "pokemon/" + pokemonId);
+
+        pokemonResource.addProperty(RDF.type, model.createResource(BASE_URI + "Pokemon"));
+
+        // Add type-specific class
+        if (pokemonInfo.containsKey("type1")) {
+          Resource typeClass = model.createResource(BASE_URI + "Type/" + pokemonInfo.get("type1"));
+          typeClass.addProperty(RDFS.subClassOf, model.createResource(BASE_URI + "Pokemon"));
+          pokemonResource.addProperty(RDF.type, typeClass);
+      }
+
+        // Add proper owl:sameAs links
+        if (pokemonInfo.containsKey("dbpedia_uri")) {
+            pokemonResource.addProperty(OWL.sameAs, 
+                model.createResource(pokemonInfo.get("dbpedia_uri")));
+        }
 
         // Basic properties using schema.org vocabulary
         addStringProperty(model, pokemonResource, SCHEMA_URI + "name", pokemonInfo.get("name"));
@@ -34,32 +49,43 @@ public class PokemonRDFConverter {
         addDecimalProperty(model, pokemonResource, SCHEMA_URI + "height", pokemonInfo.get("height-m"));
         addDecimalProperty(model, pokemonResource, SCHEMA_URI + "weight", pokemonInfo.get("weight-kg"));
 
+        // Evolution chain info - Make sure evolutionStage is properly typed
+        if (pokemonInfo.containsKey("evolutionStage")) {
+            try {
+                int stage = Integer.parseInt(pokemonInfo.get("evolutionStage"));
+                pokemonResource.addProperty(
+                    model.createProperty(BASE_URI + "evolutionStage"),
+                    model.createTypedLiteral(stage, XSD.integer.getURI())
+                );
+                
+                if (pokemonInfo.containsKey("evolvesFrom")) {
+                    String prevId = pokemonInfo.get("evolvesFrom");
+                    Resource prevPokemon = model.createResource(BASE_URI + "pokemon/" + prevId);
+                    pokemonResource.addProperty(
+                        model.createProperty(BASE_URI + "evolvesFrom"), 
+                        prevPokemon
+                    );
+                }
+            } catch (NumberFormatException e) {
+                logger.warn("Invalid evolution stage value: {}", pokemonInfo.get("evolutionStage"));
+            }
+        }
+
         // Pokemon-specific properties
         addStringProperty(model, pokemonResource, BASE_URI + "japaneseName", pokemonInfo.get("jname"));
         addStringProperty(model, pokemonResource, BASE_URI + "romajiName", pokemonInfo.get("tmname"));
+        
         // Clean and add category
         String category = pokemonInfo.get("category");
         if (category != null && category.startsWith("{{tt|")) {
             category = category.substring(5, category.indexOf("|"));
         }
         addStringProperty(model, pokemonResource, BASE_URI + "category", category);
+
+        // Add types
         addStringProperty(model, pokemonResource, BASE_URI + "primaryType", pokemonInfo.get("type1"));
         if (pokemonInfo.containsKey("type2")) {
             addStringProperty(model, pokemonResource, BASE_URI + "secondaryType", pokemonInfo.get("type2"));
-        }
-
-        // Evolution chain info
-        if (pokemonInfo.containsKey("evolutionStage")) {
-            addIntegerProperty(model, pokemonResource, BASE_URI + "evolutionStage", 
-                pokemonInfo.get("evolutionStage"));
-            
-            if (pokemonInfo.containsKey("evolvesFrom")) {
-                String prevId = pokemonInfo.get("evolvesFrom");
-                Resource prevPokemon = model.createResource(BASE_URI + "pokemon/" + prevId);
-                pokemonResource.addProperty(
-                    model.createProperty(BASE_URI + "evolvesFrom"), 
-                    prevPokemon);
-            }
         }
 
         // Game mechanics

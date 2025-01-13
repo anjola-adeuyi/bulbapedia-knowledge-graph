@@ -5,12 +5,12 @@
 @prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
 
 <http://example.org/pokemon/pokemon/0154>
-        rdf:type                     pokemon:Pokemon;
+        rdf:type                     pokemon:Pokemon , <http://example.org/pokemon/Type/Grass>;
         rdfs:label                   "Meganium"@en , "Meganium"@ja-Latn , "メガニウム"@ja;
         pokemon:baseExperienceYield  "236"^^xsd:int;
         pokemon:catchRate            "45"^^xsd:int;
         pokemon:category             "Herb";
-        pokemon:evolutionStage       "3"^^xsd:int;
+        pokemon:evolutionStage       3;
         pokemon:evolvesFrom          <http://example.org/pokemon/pokemon/0153>;
         pokemon:generation           "2"^^xsd:int;
         pokemon:japaneseName         "メガニウム";
@@ -23,12 +23,12 @@
         schema:weight                100.5 .
 
 <http://example.org/pokemon/pokemon/0008>
-        rdf:type                     pokemon:Pokemon;
+        rdf:type                     <http://example.org/pokemon/Type/Water> , pokemon:Pokemon;
         rdfs:label                   "カメール"@ja , "Wartortle"@en , "Kameil"@ja-Latn;
         pokemon:baseExperienceYield  "142"^^xsd:int;
         pokemon:catchRate            "45"^^xsd:int;
         pokemon:category             "Turtle";
-        pokemon:evolutionStage       "2"^^xsd:int;
+        pokemon:evolutionStage       2;
         pokemon:evolvesFrom          <http://example.org/pokemon/pokemon/0007>;
         pokemon:generation           "1"^^xsd:int;
         pokemon:japaneseName         "カメール";
@@ -44,12 +44,12 @@
                 <http://www.wikidata.org/entity/Q1421> , <http://dbpedia.org/resource/Wartortle> .
 
 <http://example.org/pokemon/pokemon/0002>
-        rdf:type                     pokemon:Pokemon;
+        rdf:type                     <http://example.org/pokemon/Type/Grass> , pokemon:Pokemon;
         rdfs:label                   "Fushigisou"@ja-Latn , "Ivysaur"@en , "フシギソウ"@ja;
         pokemon:baseExperienceYield  "142"^^xsd:int;
         pokemon:catchRate            "45"^^xsd:int;
         pokemon:category             "Seed";
-        pokemon:evolutionStage       "2"^^xsd:int;
+        pokemon:evolutionStage       2;
         pokemon:evolvesFrom          <http://example.org/pokemon/pokemon/0001>;
         pokemon:generation           "1"^^xsd:int;
         pokemon:japaneseName         "フシギソウ";
@@ -65,6 +65,9 @@
         <http://www.w3.org/2002/07/owl#sameAs>
                 <http://dbpedia.org/resource/Ivysaur> , <http://www.wikidata.org/entity/Q1411> .
 
+<http://example.org/pokemon/Type/Dragon>
+        rdfs:subClassOf  pokemon:Pokemon .
+
 <http://example.org/pokemon/ability/inner_focus>
         rdfs:label  "Inner Focus" .
 
@@ -72,12 +75,12 @@
         rdfs:label  "Torrent" .
 
 <http://example.org/pokemon/pokemon/0009>
-        rdf:type                     pokemon:Pokemon;
+        rdf:type                     <http://example.org/pokemon/Type/Water> , pokemon:Pokemon;
         rdfs:label                   "Kamex"@ja-Latn , "Blastoise"@en , "カメックス"@ja;
         pokemon:baseExperienceYield  "239"^^xsd:int;
         pokemon:catchRate            "45"^^xsd:int;
         pokemon:category             "Shellfish";
-        pokemon:evolutionStage       "3"^^xsd:int;
+        pokemon:evolutionStage       3;
         pokemon:evolvesFrom          <http://example.org/pokemon/pokemon/0008>;
         pokemon:generation           "1"^^xsd:int;
         pokemon:japaneseName         "カメックス";
@@ -92,16 +95,13 @@
         <http://www.w3.org/2002/07/owl#sameAs>
                 <http://dbpedia.org/resource/Blastoise> , <http://www.wikidata.org/entity/Q1422> .
 
-<http://example.org/pokemon/ability/shed_skin>
-        rdfs:label  "Shed Skin" .
-
 <http://example.org/pokemon/pokemon/0003>
-        rdf:type                     pokemon:Pokemon;
+        rdf:type                     <http://example.org/pokemon/Type/Grass> , pokemon:Pokemon;
         rdfs:label                   "Fushigibana"@ja-Latn , "フシギバナ"@ja , "Venusaur"@en;
         pokemon:baseExperienceYield  "236"^^xsd:int;
         pokemon:catchRate            "45"^^xsd:int;
         pokemon:category             "Seed";
-        pokemon:evolutionStage       "3"^^xsd:int;
+        pokemon:evolutionStage       3;
         pokemon:evolvesFrom          <http://example.org/pokemon/pokemon/0002>;
         pokemon:generation           "1"^^xsd:int;
         pokemon:japaneseName         "フシギバナ";
@@ -117,16 +117,19 @@
         <http://www.w3.org/2002/07/owl#sameAs>
                 <http://www.wikidata.org/entity/Q1412> , <http://dbpedia.org/resource/Venusaur> .
 
+<http://example.org/pokemon/ability/shed_skin>
+        rdfs:label  "Shed Skin" .
+
 <http://example.org/pokemon/ability/overgrow>
         rdfs:label  "Overgrow" .
 
 <http://example.org/pokemon/pokemon/0004>
-        rdf:type                     pokemon:Pokemon;
+        rdf:type                     pokemon:Pokemon , <http://example.org/pokemon/Type/Fire>;
         rdfs:label                   "Hitokage"@ja-Latn , "ヒトカゲ"@ja , "Charmander"@en;
         pokemon:baseExperienceYield  "62"^^xsd:int;
         pokemon:catchRate            "45"^^xsd:int;
         pokemon:category             "Lizard";
-        pokemon:evolutionStage       "1"^^xsd:int;
+        pokemon:evolutionStage       1;
         pokemon:generation           "1"^^xsd:int;
         pokemon:japaneseName         "ヒトカゲ";
         pokemon:primaryAbility       <http://example.org/pokemon/ability/blaze>;
@@ -144,12 +147,12 @@
         rdfs:label  "Blaze" .
 
 <http://example.org/pokemon/pokemon/0147>
-        rdf:type                     pokemon:Pokemon;
+        rdf:type                     pokemon:Pokemon , <http://example.org/pokemon/Type/Dragon>;
         rdfs:label                   "Dratini"@en , "Miniryu"@ja-Latn , "ミニリュウ"@ja;
         pokemon:baseExperienceYield  "60"^^xsd:int;
         pokemon:catchRate            "45"^^xsd:int;
         pokemon:category             "Dragon";
-        pokemon:evolutionStage       "1"^^xsd:int;
+        pokemon:evolutionStage       1;
         pokemon:generation           "1"^^xsd:int;
         pokemon:japaneseName         "ミニリュウ";
         pokemon:primaryAbility       <http://example.org/pokemon/ability/shed_skin>;
@@ -161,12 +164,12 @@
         schema:weight                3.3 .
 
 <http://example.org/pokemon/pokemon/0005>
-        rdf:type                     pokemon:Pokemon;
+        rdf:type                     <http://example.org/pokemon/Type/Fire> , pokemon:Pokemon;
         rdfs:label                   "Lizardo"@ja-Latn , "Charmeleon"@en , "リザード"@ja;
         pokemon:baseExperienceYield  "142"^^xsd:int;
         pokemon:catchRate            "45"^^xsd:int;
         pokemon:category             "Flame";
-        pokemon:evolutionStage       "2"^^xsd:int;
+        pokemon:evolutionStage       2;
         pokemon:evolvesFrom          <http://example.org/pokemon/pokemon/0004>;
         pokemon:generation           "1"^^xsd:int;
         pokemon:japaneseName         "リザード";
@@ -182,12 +185,12 @@
                 <http://www.wikidata.org/entity/Q1417> , <http://dbpedia.org/resource/Charmeleon> .
 
 <http://example.org/pokemon/pokemon/0148>
-        rdf:type                     pokemon:Pokemon;
+        rdf:type                     pokemon:Pokemon , <http://example.org/pokemon/Type/Dragon>;
         rdfs:label                   "Dragonair"@en , "ハクリュー"@ja , "Hakuryu"@ja-Latn;
         pokemon:baseExperienceYield  "147"^^xsd:int;
         pokemon:catchRate            "45"^^xsd:int;
         pokemon:category             "Dragon";
-        pokemon:evolutionStage       "2"^^xsd:int;
+        pokemon:evolutionStage       2;
         pokemon:evolvesFrom          <http://example.org/pokemon/pokemon/0147>;
         pokemon:generation           "1"^^xsd:int;
         pokemon:japaneseName         "ハクリュー";
@@ -199,13 +202,19 @@
         schema:name                  "Dragonair";
         schema:weight                16.5 .
 
+<http://example.org/pokemon/Type/Fire>
+        rdfs:subClassOf  pokemon:Pokemon .
+
+<http://example.org/pokemon/Type/Water>
+        rdfs:subClassOf  pokemon:Pokemon .
+
 <http://example.org/pokemon/pokemon/0152>
-        rdf:type                     pokemon:Pokemon;
+        rdf:type                     pokemon:Pokemon , <http://example.org/pokemon/Type/Grass>;
         rdfs:label                   "チコリータ"@ja , "Chicorita"@ja-Latn , "Chikorita"@en;
         pokemon:baseExperienceYield  "64"^^xsd:int;
         pokemon:catchRate            "45"^^xsd:int;
         pokemon:category             "Leaf";
-        pokemon:evolutionStage       "1"^^xsd:int;
+        pokemon:evolutionStage       1;
         pokemon:generation           "2"^^xsd:int;
         pokemon:japaneseName         "チコリータ";
         pokemon:primaryAbility       <http://example.org/pokemon/ability/overgrow>;
@@ -217,12 +226,12 @@
         schema:weight                6.4 .
 
 <http://example.org/pokemon/pokemon/0006>
-        rdf:type                     pokemon:Pokemon;
+        rdf:type                     <http://example.org/pokemon/Type/Fire> , pokemon:Pokemon;
         rdfs:label                   "Charizard"@en , "リザードン"@ja , "Lizardon"@ja-Latn;
         pokemon:baseExperienceYield  "240"^^xsd:int;
         pokemon:catchRate            "45"^^xsd:int;
         pokemon:category             "Flame";
-        pokemon:evolutionStage       "3"^^xsd:int;
+        pokemon:evolutionStage       3;
         pokemon:evolvesFrom          <http://example.org/pokemon/pokemon/0005>;
         pokemon:generation           "1"^^xsd:int;
         pokemon:japaneseName         "リザードン";
@@ -239,12 +248,12 @@
                 <http://www.wikidata.org/entity/Q1418> , <http://dbpedia.org/resource/Charizard> .
 
 <http://example.org/pokemon/pokemon/0149>
-        rdf:type                     pokemon:Pokemon;
+        rdf:type                     pokemon:Pokemon , <http://example.org/pokemon/Type/Dragon>;
         rdfs:label                   "Dragonite"@en , "Kairyu"@ja-Latn , "カイリュー"@ja;
         pokemon:baseExperienceYield  "270"^^xsd:int;
         pokemon:catchRate            "45"^^xsd:int;
         pokemon:category             "Dragon";
-        pokemon:evolutionStage       "3"^^xsd:int;
+        pokemon:evolutionStage       3;
         pokemon:evolvesFrom          <http://example.org/pokemon/pokemon/0148>;
         pokemon:generation           "1"^^xsd:int;
         pokemon:japaneseName         "カイリュー";
@@ -257,13 +266,16 @@
         schema:name                  "Dragonite";
         schema:weight                "210"^^xsd:decimal .
 
+<http://example.org/pokemon/Type/Grass>
+        rdfs:subClassOf  pokemon:Pokemon .
+
 <http://example.org/pokemon/pokemon/0153>
-        rdf:type                     pokemon:Pokemon;
+        rdf:type                     <http://example.org/pokemon/Type/Grass> , pokemon:Pokemon;
         rdfs:label                   "Bayleef"@en , "Bayleaf"@ja-Latn , "ベイリーフ"@ja;
         pokemon:baseExperienceYield  "142"^^xsd:int;
         pokemon:catchRate            "45"^^xsd:int;
         pokemon:category             "Leaf";
-        pokemon:evolutionStage       "2"^^xsd:int;
+        pokemon:evolutionStage       2;
         pokemon:evolvesFrom          <http://example.org/pokemon/pokemon/0152>;
         pokemon:generation           "2"^^xsd:int;
         pokemon:japaneseName         "ベイリーフ";
@@ -276,10 +288,10 @@
         schema:weight                15.8 .
 
 <http://example.org/pokemon/pokemon/0007>
-        rdf:type                pokemon:Pokemon;
+        rdf:type                <http://example.org/pokemon/Type/Water> , pokemon:Pokemon;
         rdfs:label              "Zenigame"@ja-Latn , "Squirtle"@en , "ゼニガメ"@ja;
         pokemon:category        "{{tt";
-        pokemon:evolutionStage  "1"^^xsd:int;
+        pokemon:evolutionStage  1;
         pokemon:japaneseName    "ゼニガメ";
         pokemon:primaryType     "Water";
         pokemon:romajiName      "Zenigame";
@@ -290,12 +302,12 @@
                 <http://www.wikidata.org/entity/Q1420> , <http://dbpedia.org/resource/Squirtle> .
 
 <http://example.org/pokemon/pokemon/0001>
-        rdf:type                     pokemon:Pokemon;
+        rdf:type                     <http://example.org/pokemon/Type/Grass> , pokemon:Pokemon;
         rdfs:label                   "フシギダネ"@ja , "Bulbasaur"@en , "Fushigidane"@ja-Latn;
         pokemon:baseExperienceYield  "64"^^xsd:int;
         pokemon:catchRate            "45"^^xsd:int;
         pokemon:category             "Seed";
-        pokemon:evolutionStage       "1"^^xsd:int;
+        pokemon:evolutionStage       1;
         pokemon:generation           "1"^^xsd:int;
         pokemon:japaneseName         "フシギダネ";
         pokemon:primaryAbility       <http://example.org/pokemon/ability/overgrow>;
