@@ -3,27 +3,65 @@
 @prefix sh:      <http://www.w3.org/ns/shacl#> .
 @prefix shapes:  <http://example.org/pokemon/shapes/> .
 
-shapes:PokemonShape  a  sh:NodeShape;
-        sh:property     [ sh:in    ( "Normal" "Fire" "Water" "Electric" "Grass" "Ice" "Fighting" "Poison" "Ground" "Flying" "Psychic" "Bug" "Rock" "Ghost" "Dragon" "Dark" "Steel" "Fairy" );
-                          sh:path  pokemon:primaryType
-                        ];
-        sh:property     [ sh:datatype      <http://www.w3.org/2001/XMLSchema#decimal>;
-                          sh:maxInclusive  "1000.0"^^<http://www.w3.org/2001/XMLSchema#double>;
-                          sh:minInclusive  "0.1"^^<http://www.w3.org/2001/XMLSchema#double>;
-                          sh:path          schema:weight
-                        ];
-        sh:property     [ sh:datatype      <http://www.w3.org/2001/XMLSchema#decimal>;
-                          sh:maxInclusive  "25.0"^^<http://www.w3.org/2001/XMLSchema#double>;
-                          sh:minInclusive  "0.1"^^<http://www.w3.org/2001/XMLSchema#double>;
-                          sh:path          schema:height
-                        ];
-        sh:property     [ sh:minCount  "1"^^<http://www.w3.org/2001/XMLSchema#int>;
-                          sh:path      pokemon:primaryType
-                        ];
-        sh:property     [ sh:minCount  "1"^^<http://www.w3.org/2001/XMLSchema#int>;
-                          sh:path      schema:identifier
-                        ];
-        sh:property     [ sh:minCount  "1"^^<http://www.w3.org/2001/XMLSchema#int>;
-                          sh:path      schema:name
-                        ];
-        sh:targetClass  pokemon:Pokemon .
+shapes:PokemonShape a sh:NodeShape ;
+    sh:targetClass pokemon:Pokemon ;
+    
+    # Required properties
+    sh:property [
+        sh:path schema:name ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+    ] ;
+    
+    sh:property [
+        sh:path schema:identifier ;
+        sh:minCount 1 ;
+        sh:pattern "^[0-9]{4}$" ;
+    ] ;
+    
+    # Type constraints
+    sh:property [
+        sh:path pokemon:primaryType ;
+        sh:minCount 1 ;
+        sh:in ("Normal" "Fire" "Water" "Electric" "Grass" "Ice" "Fighting" "Poison" 
+               "Ground" "Flying" "Psychic" "Bug" "Rock" "Ghost" "Dragon" "Dark" 
+               "Steel" "Fairy") ;
+    ] ;
+    
+    # Physical characteristics
+    sh:property [
+        sh:path schema:height ;
+        sh:datatype xsd:decimal ;
+        sh:minInclusive 0.1 ;
+        sh:maxInclusive 25.0 ;
+    ] ;
+    
+    sh:property [
+        sh:path schema:weight ;
+        sh:datatype xsd:decimal ;
+        sh:minInclusive 0.1 ;
+        sh:maxInclusive 1000.0 ;
+    ] ;
+    
+    # Evolution chain validation
+    sh:property [
+        sh:path pokemon:evolutionStage ;
+        sh:datatype xsd:integer ;
+        sh:minInclusive 1 ;
+        sh:maxInclusive 3 ;
+    ] ;
+    
+    # Multilingual labels
+    sh:property [
+        sh:path rdfs:label ;
+        sh:languageIn ("en" "ja" "ja-Latn") ;
+        sh:uniqueLang true ;
+    ] .
+
+# Add shape for abilities
+shapes:AbilityShape a sh:NodeShape ;
+    sh:targetClass pokemon:Ability ;
+    sh:property [
+        sh:path rdfs:label ;
+        sh:minCount 1 ;
+    ] .

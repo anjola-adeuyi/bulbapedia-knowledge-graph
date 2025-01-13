@@ -15,19 +15,18 @@ public class InferenceHandler {
         Model inferenceModel = ModelFactory.createDefaultModel();
         inferenceModel.add(baseModel);
 
-        // Add transitive closure for subClassOf
+        // Add Pokemon type hierarchy
+        addPokemonTypeHierarchy(inferenceModel);
+
+        // Enhanced sameAs closure with property inheritance
+        addEnhancedSameAsClosure(inferenceModel);
+
+        // Add characteristic property hierarchy
+        addCharacteristicHierarchy(inferenceModel);
+
+        // Add all other inferences
         addTransitiveSubClassClosure(inferenceModel);
-
-        // Add transitive closure for subPropertyOf
-        addTransitiveSubPropertyClosure(inferenceModel);
-
-        // Add type inference from subClassOf
         addTypeInference(inferenceModel);
-
-        // Add owl:sameAs symmetric and transitive closure
-        addSameAsClosure(inferenceModel);
-
-        // Add property inheritance through owl:sameAs
         addPropertyInheritance(inferenceModel);
 
         logger.info("Added inference rules. Original size: {}, New size: {}", 
@@ -35,6 +34,92 @@ public class InferenceHandler {
         
         return inferenceModel;
     }
+
+    private static void addPokemonTypeHierarchy(Model model) {
+        // Define base Pokemon class
+        Resource pokemonClass = model.createResource("http://example.org/pokemon/Pokemon");
+        
+        // Define type classes with proper hierarchy
+        String[] types = {"Fire", "Water", "Grass", "Electric", "Dragon"};
+        for (String type : types) {
+            Resource typeClass = model.createResource("http://example.org/pokemon/Type/" + type);
+            typeClass.addProperty(RDFS.subClassOf, pokemonClass);
+            
+            // Add type characteristics
+            Property hasType = model.createProperty("http://example.org/pokemon/hasType");
+            typeClass.addProperty(hasType, type);
+        }
+    }
+
+    private static void addCharacteristicHierarchy(Model model) {
+        // Create base characteristic property
+        Property characteristic = model.createProperty("http://example.org/pokemon/characteristic");
+        
+        // Define sub-properties
+        Property[] properties = {
+            model.createProperty("http://example.org/pokemon/height"),
+            model.createProperty("http://example.org/pokemon/weight"),
+            model.createProperty("http://example.org/pokemon/category"),
+            model.createProperty("http://example.org/pokemon/ability")
+        };
+        
+        for (Property prop : properties) {
+            model.add(prop, RDFS.subPropertyOf, characteristic);
+        }
+    }
+
+    private static void addEnhancedSameAsClosure(Model model) {
+        boolean changed;
+        do {
+            changed = false;
+            StmtIterator iter = model.listStatements(null, OWL.sameAs, (RDFNode)null);
+            List<Statement> newStatements = new ArrayList<>();
+            
+            while (iter.hasNext()) {
+                Statement stmt = iter.next();
+                if (stmt.getObject().isResource()) {
+                    // Symmetric
+                    if (!model.contains(stmt.getObject().asResource(), OWL.sameAs, stmt.getSubject())) {
+                        newStatements.add(model.createStatement(
+                            stmt.getObject().asResource(), OWL.sameAs, stmt.getSubject()));
+                        changed = true;
+                    }
+                    
+                    // Transitive
+                    StmtIterator sameAsIter = model.listStatements(
+                        stmt.getObject().asResource(), OWL.sameAs, (RDFNode)null);
+                    while (sameAsIter.hasNext()) {
+                        Statement sameAsStmt = sameAsIter.next();
+                        if (!model.contains(stmt.getSubject(), OWL.sameAs, sameAsStmt.getObject())) {
+                            newStatements.add(model.createStatement(
+                                stmt.getSubject(), OWL.sameAs, sameAsStmt.getObject()));
+                            changed = true;
+                        }
+                    }
+                    
+                    // Property inheritance
+                    StmtIterator propIter = model.listStatements(
+                        stmt.getSubject(), null, (RDFNode)null);
+                    while (propIter.hasNext()) {
+                        Statement propStmt = propIter.next();
+                        if (!propStmt.getPredicate().equals(OWL.sameAs)) {
+                            if (!model.contains(stmt.getObject().asResource(), 
+                                            propStmt.getPredicate(), 
+                                            propStmt.getObject())) {
+                                newStatements.add(model.createStatement(
+                                    stmt.getObject().asResource(),
+                                    propStmt.getPredicate(),
+                                    propStmt.getObject()));
+                                changed = true;
+                            }
+                        }
+                    }
+                }
+            }
+            model.add(newStatements);
+        } while (changed);
+    }
+
 
     private static void addTransitiveSubClassClosure(Model model) {
         boolean changed;
@@ -62,32 +147,6 @@ public class InferenceHandler {
         } while (changed);
     }
 
-    private static void addTransitiveSubPropertyClosure(Model model) {
-        boolean changed;
-        do {
-            changed = false;
-            StmtIterator iter = model.listStatements(null, RDFS.subPropertyOf, (RDFNode)null);
-            List<Statement> newStatements = new ArrayList<>();
-            
-            while (iter.hasNext()) {
-                Statement stmt = iter.next();
-                if (stmt.getObject().isResource()) {
-                    StmtIterator superIter = model.listStatements(
-                        stmt.getObject().asResource(), RDFS.subPropertyOf, (RDFNode)null);
-                    while (superIter.hasNext()) {
-                        Statement superStmt = superIter.next();
-                        if (!model.contains(stmt.getSubject(), RDFS.subPropertyOf, superStmt.getObject())) {
-                            newStatements.add(model.createStatement(
-                                stmt.getSubject(), RDFS.subPropertyOf, superStmt.getObject()));
-                            changed = true;
-                        }
-                    }
-                }
-            }
-            model.add(newStatements);
-        } while (changed);
-    }
-
     private static void addTypeInference(Model model) {
         StmtIterator typeIter = model.listStatements(null, RDF.type, (RDFNode)null);
         List<Statement> newStatements = new ArrayList<>();
@@ -105,40 +164,6 @@ public class InferenceHandler {
             }
         }
         model.add(newStatements);
-    }
-
-    private static void addSameAsClosure(Model model) {
-        boolean changed;
-        do {
-            changed = false;
-            StmtIterator iter = model.listStatements(null, OWL.sameAs, (RDFNode)null);
-            List<Statement> newStatements = new ArrayList<>();
-            
-            while (iter.hasNext()) {
-                Statement stmt = iter.next();
-                if (stmt.getObject().isResource()) {
-                    // Symmetric
-                    if (!model.contains(stmt.getObject().asResource(), OWL.sameAs, stmt.getSubject())) {
-                        newStatements.add(model.createStatement(
-                            stmt.getObject().asResource(), OWL.sameAs, stmt.getSubject()));
-                        changed = true;
-                    }
-                    
-                    // Transitive
-                    StmtIterator transitiveIter = model.listStatements(
-                        stmt.getObject().asResource(), OWL.sameAs, (RDFNode)null);
-                    while (transitiveIter.hasNext()) {
-                        Statement transitiveStmt = transitiveIter.next();
-                        if (!model.contains(stmt.getSubject(), OWL.sameAs, transitiveStmt.getObject())) {
-                            newStatements.add(model.createStatement(
-                                stmt.getSubject(), OWL.sameAs, transitiveStmt.getObject()));
-                            changed = true;
-                        }
-                    }
-                }
-            }
-            model.add(newStatements);
-        } while (changed);
     }
 
     private static void addPropertyInheritance(Model model) {

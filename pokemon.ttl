@@ -1,3 +1,4 @@
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
 @prefix pokemon: <http://example.org/pokemon/> .
 @prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
@@ -17,10 +18,12 @@
         pokemon:primaryAbility       <http://example.org/pokemon/ability/overgrow>;
         pokemon:primaryType          "Grass";
         pokemon:romajiName           "Meganium";
-        schema:height                1.8;
+        schema:height                1.8000000000000000444089209850062616169452667236328125 , 1.8;
         schema:identifier            "0154";
         schema:name                  "Meganium";
-        schema:weight                100.5 .
+        schema:sameAs                <https://bulbapedia.bulbagarden.net/wiki/Meganium_(Pokémon)>;
+        schema:weight                100.5;
+        owl:sameAs                   <http://dbpedia.org/resource/Meganium> .
 
 <http://example.org/pokemon/pokemon/0008>
         rdf:type                     <http://example.org/pokemon/Type/Water> , pokemon:Pokemon;
@@ -38,10 +41,9 @@
         schema:height                "1"^^xsd:decimal;
         schema:identifier            "0008";
         schema:name                  "Wartortle";
-        schema:sameAs                <https://en.wikipedia.org/wiki/Wartortle>;
+        schema:sameAs                <https://bulbapedia.bulbagarden.net/wiki/Wartortle_(Pokémon)> , <https://en.wikipedia.org/wiki/Wartortle>;
         schema:weight                22.5;
-        <http://www.w3.org/2002/07/owl#sameAs>
-                <http://www.wikidata.org/entity/Q1421> , <http://dbpedia.org/resource/Wartortle> .
+        owl:sameAs                   <http://www.wikidata.org/entity/Q1421> , <http://dbpedia.org/resource/Wartortle> .
 
 <http://example.org/pokemon/Type/Dragon>
         rdfs:subClassOf  pokemon:Pokemon .
@@ -63,10 +65,9 @@
         schema:height                "1"^^xsd:decimal;
         schema:identifier            "0002";
         schema:name                  "Ivysaur";
-        schema:sameAs                <https://en.wikipedia.org/wiki/Ivysaur>;
+        schema:sameAs                <https://bulbapedia.bulbagarden.net/wiki/Ivysaur_(Pokémon)> , <https://en.wikipedia.org/wiki/Ivysaur>;
         schema:weight                "13"^^xsd:decimal;
-        <http://www.w3.org/2002/07/owl#sameAs>
-                <http://dbpedia.org/resource/Ivysaur> , <http://www.wikidata.org/entity/Q1411> .
+        owl:sameAs                   <http://dbpedia.org/resource/Ivysaur> , <http://www.wikidata.org/entity/Q1411> .
 
 <http://example.org/pokemon/ability/inner_focus>
         rdfs:label  "Inner Focus" .
@@ -87,13 +88,12 @@
         pokemon:primaryAbility       <http://example.org/pokemon/ability/torrent>;
         pokemon:primaryType          "Water";
         pokemon:romajiName           "Kamex";
-        schema:height                1.6;
+        schema:height                1.600000000000000088817841970012523233890533447265625 , 1.6;
         schema:identifier            "0009";
         schema:name                  "Blastoise";
-        schema:sameAs                <https://en.wikipedia.org/wiki/Blastoise>;
+        schema:sameAs                <https://en.wikipedia.org/wiki/Blastoise> , <https://bulbapedia.bulbagarden.net/wiki/Blastoise_(Pokémon)>;
         schema:weight                85.5;
-        <http://www.w3.org/2002/07/owl#sameAs>
-                <http://dbpedia.org/resource/Blastoise> , <http://www.wikidata.org/entity/Q1422> .
+        owl:sameAs                   <http://dbpedia.org/resource/Blastoise> , <http://www.wikidata.org/entity/Q1422> .
 
 <http://example.org/pokemon/ability/shed_skin>
         rdfs:label  "Shed Skin" .
@@ -115,10 +115,9 @@
         schema:height                "2"^^xsd:decimal;
         schema:identifier            "0003";
         schema:name                  "Venusaur";
-        schema:sameAs                <https://en.wikipedia.org/wiki/Venusaur>;
+        schema:sameAs                <https://bulbapedia.bulbagarden.net/wiki/Venusaur_(Pokémon)> , <https://en.wikipedia.org/wiki/Venusaur>;
         schema:weight                "100"^^xsd:decimal;
-        <http://www.w3.org/2002/07/owl#sameAs>
-                <http://www.wikidata.org/entity/Q1412> , <http://dbpedia.org/resource/Venusaur> .
+        owl:sameAs                   <http://www.wikidata.org/entity/Q1412> , <http://dbpedia.org/resource/Venusaur> .
 
 <http://example.org/pokemon/ability/overgrow>
         rdfs:label  "Overgrow" .
@@ -135,13 +134,12 @@
         pokemon:primaryAbility       <http://example.org/pokemon/ability/blaze>;
         pokemon:primaryType          "Fire";
         pokemon:romajiName           "Hitokage";
-        schema:height                0.6;
+        schema:height                0.59999999999999997779553950749686919152736663818359375 , 0.6;
         schema:identifier            "0004";
         schema:name                  "Charmander";
-        schema:sameAs                <https://en.wikipedia.org/wiki/Charmander>;
+        schema:sameAs                <https://bulbapedia.bulbagarden.net/wiki/Charmander_(Pokémon)> , <https://en.wikipedia.org/wiki/Charmander>;
         schema:weight                8.5;
-        <http://www.w3.org/2002/07/owl#sameAs>
-                <http://dbpedia.org/resource/Charmander> , <http://www.wikidata.org/entity/Q1416> .
+        owl:sameAs                   <http://dbpedia.org/resource/Charmander> , <http://www.wikidata.org/entity/Q1416> .
 
 <http://example.org/pokemon/ability/blaze>
         rdfs:label  "Blaze" .
@@ -158,10 +156,12 @@
         pokemon:primaryAbility       <http://example.org/pokemon/ability/shed_skin>;
         pokemon:primaryType          "Dragon";
         pokemon:romajiName           "Miniryu";
-        schema:height                1.8;
+        schema:height                1.8000000000000000444089209850062616169452667236328125 , 1.8;
         schema:identifier            "0147";
         schema:name                  "Dratini";
-        schema:weight                3.3 .
+        schema:sameAs                <https://bulbapedia.bulbagarden.net/wiki/Dratini_(Pokémon)>;
+        schema:weight                3.3 , 3.29999999999999982236431605997495353221893310546875;
+        owl:sameAs                   <http://dbpedia.org/resource/Dratini> .
 
 <http://example.org/pokemon/pokemon/0005>
         rdf:type                     <http://example.org/pokemon/Type/Fire> , pokemon:Pokemon;
@@ -176,13 +176,12 @@
         pokemon:primaryAbility       <http://example.org/pokemon/ability/blaze>;
         pokemon:primaryType          "Fire";
         pokemon:romajiName           "Lizardo";
-        schema:height                1.1;
+        schema:height                1.100000000000000088817841970012523233890533447265625 , 1.1;
         schema:identifier            "0005";
         schema:name                  "Charmeleon";
-        schema:sameAs                <https://en.wikipedia.org/wiki/Charmeleon>;
+        schema:sameAs                <https://en.wikipedia.org/wiki/Charmeleon> , <https://bulbapedia.bulbagarden.net/wiki/Charmeleon_(Pokémon)>;
         schema:weight                "19"^^xsd:decimal;
-        <http://www.w3.org/2002/07/owl#sameAs>
-                <http://www.wikidata.org/entity/Q1417> , <http://dbpedia.org/resource/Charmeleon> .
+        owl:sameAs                   <http://www.wikidata.org/entity/Q1417> , <http://dbpedia.org/resource/Charmeleon> .
 
 <http://example.org/pokemon/pokemon/0148>
         rdf:type                     pokemon:Pokemon , <http://example.org/pokemon/Type/Dragon>;
@@ -200,7 +199,9 @@
         schema:height                "4"^^xsd:decimal;
         schema:identifier            "0148";
         schema:name                  "Dragonair";
-        schema:weight                16.5 .
+        schema:sameAs                <https://bulbapedia.bulbagarden.net/wiki/Dragonair_(Pokémon)>;
+        schema:weight                16.5;
+        owl:sameAs                   <http://dbpedia.org/resource/Dragonair> .
 
 <http://example.org/pokemon/Type/Fire>
         rdfs:subClassOf  pokemon:Pokemon .
@@ -220,10 +221,12 @@
         pokemon:primaryAbility       <http://example.org/pokemon/ability/overgrow>;
         pokemon:primaryType          "Grass";
         pokemon:romajiName           "Chicorita";
-        schema:height                0.9;
+        schema:height                0.9 , 0.90000000000000002220446049250313080847263336181640625;
         schema:identifier            "0152";
         schema:name                  "Chikorita";
-        schema:weight                6.4 .
+        schema:sameAs                <https://bulbapedia.bulbagarden.net/wiki/Chikorita_(Pokémon)>;
+        schema:weight                6.4 , 6.4000000000000003552713678800500929355621337890625;
+        owl:sameAs                   <http://dbpedia.org/resource/Chikorita> .
 
 <http://example.org/pokemon/pokemon/0006>
         rdf:type                     <http://example.org/pokemon/Type/Fire> , pokemon:Pokemon;
@@ -239,13 +242,12 @@
         pokemon:primaryType          "Fire";
         pokemon:romajiName           "Lizardon";
         pokemon:secondaryType        "Flying";
-        schema:height                1.7;
+        schema:height                1.7 , 1.6999999999999999555910790149937383830547332763671875;
         schema:identifier            "0006";
         schema:name                  "Charizard";
-        schema:sameAs                <https://en.wikipedia.org/wiki/Charizard>;
+        schema:sameAs                <https://en.wikipedia.org/wiki/Charizard> , <https://bulbapedia.bulbagarden.net/wiki/Charizard_(Pokémon)>;
         schema:weight                90.5;
-        <http://www.w3.org/2002/07/owl#sameAs>
-                <http://www.wikidata.org/entity/Q1418> , <http://dbpedia.org/resource/Charizard> .
+        owl:sameAs                   <http://www.wikidata.org/entity/Q1418> , <http://dbpedia.org/resource/Charizard> .
 
 <http://example.org/pokemon/pokemon/0149>
         rdf:type                     pokemon:Pokemon , <http://example.org/pokemon/Type/Dragon>;
@@ -261,10 +263,12 @@
         pokemon:primaryType          "Dragon";
         pokemon:romajiName           "Kairyu";
         pokemon:secondaryType        "Flying";
-        schema:height                2.2;
+        schema:height                2.2 , 2.20000000000000017763568394002504646778106689453125;
         schema:identifier            "0149";
         schema:name                  "Dragonite";
-        schema:weight                "210"^^xsd:decimal .
+        schema:sameAs                <https://bulbapedia.bulbagarden.net/wiki/Dragonite_(Pokémon)>;
+        schema:weight                "210"^^xsd:decimal;
+        owl:sameAs                   <http://dbpedia.org/resource/Dragonite> .
 
 <http://example.org/pokemon/Type/Grass>
         rdfs:subClassOf  pokemon:Pokemon .
@@ -282,10 +286,12 @@
         pokemon:primaryAbility       <http://example.org/pokemon/ability/overgrow>;
         pokemon:primaryType          "Grass";
         pokemon:romajiName           "Bayleaf";
-        schema:height                1.2;
+        schema:height                1.1999999999999999555910790149937383830547332763671875 , 1.2;
         schema:identifier            "0153";
         schema:name                  "Bayleef";
-        schema:weight                15.8 .
+        schema:sameAs                <https://bulbapedia.bulbagarden.net/wiki/Bayleef_(Pokémon)>;
+        schema:weight                15.8 , 15.800000000000000710542735760100185871124267578125;
+        owl:sameAs                   <http://dbpedia.org/resource/Bayleef> .
 
 <http://example.org/pokemon/pokemon/0007>
         rdf:type                <http://example.org/pokemon/Type/Water> , pokemon:Pokemon;
@@ -297,9 +303,8 @@
         pokemon:romajiName      "Zenigame";
         schema:identifier       "0007";
         schema:name             "Squirtle";
-        schema:sameAs           <https://en.wikipedia.org/wiki/Squirtle>;
-        <http://www.w3.org/2002/07/owl#sameAs>
-                <http://www.wikidata.org/entity/Q1420> , <http://dbpedia.org/resource/Squirtle> .
+        schema:sameAs           <https://en.wikipedia.org/wiki/Squirtle> , <https://bulbapedia.bulbagarden.net/wiki/Squirtle_(Pokémon)>;
+        owl:sameAs              <http://www.wikidata.org/entity/Q1420> , <http://dbpedia.org/resource/Squirtle> .
 
 <http://example.org/pokemon/pokemon/0001>
         rdf:type                     <http://example.org/pokemon/Type/Grass> , pokemon:Pokemon;
@@ -314,10 +319,9 @@
         pokemon:primaryType          "Grass";
         pokemon:romajiName           "Fushigidane";
         pokemon:secondaryType        "Poison";
-        schema:height                0.7;
+        schema:height                0.7 , 0.6999999999999999555910790149937383830547332763671875;
         schema:identifier            "0001";
         schema:name                  "Bulbasaur";
-        schema:sameAs                <https://en.wikipedia.org/wiki/Bulbasaur>;
-        schema:weight                6.9;
-        <http://www.w3.org/2002/07/owl#sameAs>
-                <http://dbpedia.org/resource/Bulbasaur> , <http://www.wikidata.org/entity/Q1410> .
+        schema:sameAs                <https://en.wikipedia.org/wiki/Bulbasaur> , <https://bulbapedia.bulbagarden.net/wiki/Bulbasaur_(Pokémon)>;
+        schema:weight                6.9 , 6.9000000000000003552713678800500929355621337890625;
+        owl:sameAs                   <http://dbpedia.org/resource/Bulbasaur> , <http://www.wikidata.org/entity/Q1410> .

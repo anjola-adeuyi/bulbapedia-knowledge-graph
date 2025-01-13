@@ -8,6 +8,7 @@ import org.apache.jena.vocabulary.XSD;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,179 +29,114 @@ public class PokemonRDFConverter {
 
     public Model convertToRDF(Map<String, String> pokemonInfo) {
         Model model = ModelFactory.createDefaultModel();
+        
+        // Set common prefixes
         model.setNsPrefix("pokemon", BASE_URI);
         model.setNsPrefix("schema", SCHEMA_URI);
         model.setNsPrefix("rdfs", RDFS.getURI());
-        model.setNsPrefix("rdf", RDF.getURI());
-        model.setNsPrefix("xsd", XSD.getURI());
         model.setNsPrefix("owl", OWL.getURI());
-
-        // Create base resource
-        String pokemonId = pokemonInfo.getOrDefault("ndex", "0000");
+    
+        String pokemonId = String.format("%04d", 
+            Integer.parseInt(pokemonInfo.getOrDefault("ndex", "0")));
         Resource pokemonResource = model.createResource(BASE_URI + "pokemon/" + pokemonId);
-
-        // Create characteristic property hierarchy
-        Property characteristicProp = POKEMON_CHARACTERISTIC;
-
-        // Register all characteristic properties
-        Property[] characteristicProps = {
-            SCHEMA_HEIGHT,
-            SCHEMA_WEIGHT,
-            POKEMON_PRIMARY_TYPE,
-            createCharacteristicProperty(model, BASE_URI + "japaneseName"),
-            createCharacteristicProperty(model, BASE_URI + "romajiName"),
-            createCharacteristicProperty(model, BASE_URI + "category")
-        };
-        for (Property prop : characteristicProps) {
-            prop.addProperty(RDFS.subPropertyOf, characteristicProp);
-        }
-
-        // Create Pokemon class
+    
+        // Add type hierarchy
         Resource pokemonClass = model.createResource(BASE_URI + "Pokemon");
-
-        if (pokemonInfo.containsKey("type1")) {
-            String type = pokemonInfo.get("type1");
-            // Create type class with proper hierarchy
-            Resource typeClass = model.createResource(BASE_URI + "Type/" + type);
+        String primaryType = pokemonInfo.get("type1");
+        if (primaryType != null) {
+            Resource typeClass = model.createResource(BASE_URI + "Type/" + primaryType);
             typeClass.addProperty(RDFS.subClassOf, pokemonClass);
-            
-            // Add type info to both class and instance
-            typeClass.addProperty(POKEMON_PRIMARY_TYPE, ResourceFactory.createPlainLiteral(type));
-            pokemonResource.addProperty(POKEMON_PRIMARY_TYPE, type);
-            
-            // Add type relationships
             pokemonResource.addProperty(RDF.type, typeClass);
         }
-
-        // Always add base Pokemon type
         pokemonResource.addProperty(RDF.type, pokemonClass);
-
-        // Add DBpedia and Wikidata links
-        String name = pokemonInfo.get("name");
-        if (name != null) {
-          // DBpedia link
-          String dbpediaUri = "http://dbpedia.org/resource/" + name.replace(" ", "_");
-          Resource dbpediaResource = model.createResource(dbpediaUri);
-          // Add direct properties to DBpedia resource first
-          dbpediaResource.addProperty(SCHEMA_NAME, name);
-          // Then link with owl:sameAs
-          pokemonResource.addProperty(OWL.sameAs, dbpediaResource);
-
-          // Wikidata link
-          String wikidataId = getWikidataId(name);
-          if (wikidataId != null) {
-              Resource wikidataResource = model.createResource("http://www.wikidata.org/entity/" + wikidataId);
-              // Add direct properties to Wikidata resource
-              wikidataResource.addProperty(SCHEMA_NAME, name);
-              // Then link with owl:sameAs
-              pokemonResource.addProperty(OWL.sameAs, wikidataResource);
-            }
-        }
-
-        // Basic properties
-        pokemonResource.addProperty(SCHEMA_NAME, pokemonInfo.get("name"));
-        pokemonResource.addProperty(SCHEMA_IDENTIFIER, pokemonId);
+    
+        // Add basic properties with validation
+        addValidatedProperty(model, pokemonResource, SCHEMA_NAME, pokemonInfo.get("name"));
+        addValidatedProperty(model, pokemonResource, SCHEMA_IDENTIFIER, pokemonId);
         
-        // Physical characteristics
-        addDecimalProperty(model, pokemonResource, SCHEMA_HEIGHT, pokemonInfo.get("height-m"));
-        addDecimalProperty(model, pokemonResource, SCHEMA_WEIGHT, pokemonInfo.get("weight-kg"));
-
-        // Evolution chain info
-        if (pokemonInfo.containsKey("evolutionStage")) {
-            try {
-                int stage = Integer.parseInt(pokemonInfo.get("evolutionStage"));
-                Property evolutionStageProp = createCharacteristicProperty(model, BASE_URI + "evolutionStage");
-                pokemonResource.addProperty(
-                    evolutionStageProp,
-                    model.createTypedLiteral(stage, XSD.integer.getURI())
-                );
-                
-                if (pokemonInfo.containsKey("evolvesFrom")) {
-                    String prevId = pokemonInfo.get("evolvesFrom");
-                    Resource prevPokemon = model.createResource(BASE_URI + "pokemon/" + prevId);
-                    pokemonResource.addProperty(
-                        model.createProperty(BASE_URI + "evolvesFrom"), 
-                        prevPokemon
-                    );
-                }
-            } catch (NumberFormatException e) {
-                logger.warn("Invalid evolution stage value: {}", pokemonInfo.get("evolutionStage"));
-            }
-        }
-
-        // Pokemon-specific properties
-        addCharacteristicProperty(model, pokemonResource, BASE_URI + "japaneseName", pokemonInfo.get("jname"));
-        addCharacteristicProperty(model, pokemonResource, BASE_URI + "romajiName", pokemonInfo.get("tmname"));
-        
-        // Category
-        String category = pokemonInfo.get("category");
-        if (category != null && category.startsWith("{{tt|")) {
-            category = category.substring(5, category.indexOf("|"));
-        }
-        addCharacteristicProperty(model, pokemonResource, BASE_URI + "category", category);
-
-        // Types
-        addCharacteristicProperty(model, pokemonResource, BASE_URI + "primaryType", pokemonInfo.get("type1"));
-        if (pokemonInfo.containsKey("type2")) {
-            addCharacteristicProperty(model, pokemonResource, BASE_URI + "secondaryType", pokemonInfo.get("type2"));
-        }
-
-        // Game mechanics
-        addIntegerProperty(model, pokemonResource, BASE_URI + "baseExperienceYield", pokemonInfo.get("expyield"));
-        addIntegerProperty(model, pokemonResource, BASE_URI + "catchRate", pokemonInfo.get("catchrate"));
-        addIntegerProperty(model, pokemonResource, BASE_URI + "generation", pokemonInfo.get("generation"));
-
-        // Abilities
-        if (pokemonInfo.containsKey("ability1")) {
-            Resource ability = model.createResource(BASE_URI + "ability/" + 
-                pokemonInfo.get("ability1").toLowerCase().replace(" ", "_"))
-                .addProperty(RDFS.label, pokemonInfo.get("ability1"));
-            pokemonResource.addProperty(
-                createCharacteristicProperty(model, BASE_URI + "primaryAbility"),
-                ability
-            );
-        }
-
-        logger.debug("Generated triples for {}: {}", pokemonInfo.get("name"), model.size());
-        model.write(System.out, "TURTLE"); // Temporarily add this to see generated RDF
-
+        // Add physical characteristics
+        addDecimalProperty(model, pokemonResource, SCHEMA_HEIGHT, 
+            pokemonInfo.get("height-m"), 0.1, 25.0);
+        addDecimalProperty(model, pokemonResource, SCHEMA_WEIGHT, 
+            pokemonInfo.get("weight-kg"), 0.1, 1000.0);
+    
+        // Add multilingual labels
+        addMultilingualLabels(model, pokemonResource, pokemonInfo);
+    
+        // Add external links with verification
+        addExternalLinks(model, pokemonResource, pokemonInfo);
+    
         return model;
     }
 
-    private Property createCharacteristicProperty(Model model, String uri) {
-        Property prop = model.createProperty(uri);
-        prop.addProperty(RDFS.subPropertyOf, POKEMON_CHARACTERISTIC);
-        return prop;
+    private void addValidatedProperty(Model model, Resource resource, 
+      Property property, String value) {
+      if (value != null && !value.trim().isEmpty()) {
+      resource.addProperty(property, value.trim());
+      }
     }
 
-    private void addCharacteristicProperty(Model model, Resource resource, String propertyUri, String value) {
-        if (value != null && !value.isEmpty()) {
-            Property property = createCharacteristicProperty(model, propertyUri);
-            resource.addProperty(property, value);
+    private void addMultilingualLabels(Model model, Resource resource, 
+      Map<String, String> pokemonInfo) {
+      String name = pokemonInfo.get("name");
+      if (name != null) {
+        resource.addProperty(RDFS.label, model.createLiteral(name, "en"));
+        }
+
+      String japaneseName = pokemonInfo.get("japanese_name");
+      if (japaneseName != null) {
+        resource.addProperty(RDFS.label, model.createLiteral(japaneseName, "ja"));
+        }
+
+      String romajiName = pokemonInfo.get("romaji_name");
+      if (romajiName != null) {
+        resource.addProperty(RDFS.label, model.createLiteral(romajiName, "ja-Latn"));
         }
     }
 
-    private void addDecimalProperty(Model model, Resource resource, Property property, String value) {
-        if (value != null && !value.isEmpty()) {
+    private void addDecimalProperty(Model model, Resource resource, Property property, 
+                                  String value, double min, double max) {
+        if (value != null && !value.trim().isEmpty()) {
             try {
-                java.math.BigDecimal decimalValue = new java.math.BigDecimal(value);
-                resource.addProperty(property, ResourceFactory.createTypedLiteral(decimalValue));
+                double numericValue = Double.parseDouble(value);
+                // Validate range
+                if (numericValue >= min && numericValue <= max) {
+                    resource.addProperty(property, 
+                        model.createTypedLiteral(new BigDecimal(numericValue)));
+                } else {
+                    logger.warn("Value {} for property {} is outside valid range [{}, {}]", 
+                        value, property, min, max);
+                }
             } catch (NumberFormatException e) {
-                logger.warn("Failed to parse decimal value: {} for property: {}", value, property);
+                logger.warn("Failed to parse decimal value: {} for property: {}", 
+                    value, property);
             }
         }
     }
 
-    private void addIntegerProperty(Model model, Resource resource, String propertyUri, String value) {
-        if (value != null && !value.isEmpty()) {
-            try {
-                int numericValue = Integer.parseInt(value);
-                Property property = createCharacteristicProperty(model, propertyUri);
-                resource.addProperty(property, 
-                    model.createTypedLiteral(numericValue, XSD.xint.getURI()));
-            } catch (NumberFormatException e) {
-                logger.warn("Failed to parse integer value: {} for property: {}", value, propertyUri);
+    private void addExternalLinks(Model model, Resource resource, 
+                                Map<String, String> pokemonInfo) {
+        String name = pokemonInfo.get("name");
+        if (name != null) {
+            // Add DBpedia link
+            String dbpediaUri = "http://dbpedia.org/resource/" + 
+                name.replace(" ", "_");
+            Resource dbpediaResource = model.createResource(dbpediaUri);
+            resource.addProperty(OWL.sameAs, dbpediaResource);
+
+            // Add Wikidata link if available
+            String wikidataId = getWikidataId(name);
+            if (wikidataId != null) {
+                String wikidataUri = "http://www.wikidata.org/entity/" + wikidataId;
+                Resource wikidataResource = model.createResource(wikidataUri);
+                resource.addProperty(OWL.sameAs, wikidataResource);
             }
+
+            // Add Bulbapedia link
+            String bulbapediaUri = "https://bulbapedia.bulbagarden.net/wiki/" + 
+                name.replace(" ", "_") + "_(Pokémon)";
+            resource.addProperty(model.createProperty(SCHEMA_URI + "sameAs"), 
+                model.createResource(bulbapediaUri));
         }
     }
 
