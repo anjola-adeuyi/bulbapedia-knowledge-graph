@@ -63,33 +63,52 @@ public class PokemonFusekiServer {
     }
 
     public void loadData(Model model) {
-        // Add inference rules to the model
-        Model inferenceModel = InferenceHandler.addInferenceRules(model);
-        
-        // Clear existing data
-        dataset.getDefaultModel().removeAll();
-        
-        // Add the inference model
-        dataset.getDefaultModel().add(inferenceModel);
-        
-        logger.info("Loaded {} triples into the default graph", inferenceModel.size());
-        logger.info("Model includes inferred statements from:");
-        logger.info("- owl:sameAs relationships");
-        logger.info("- RDFS subclass hierarchy");
-        logger.info("- Property inheritance");
-        
-        // Log sample query
-        logger.info("\nData loaded successfully. Try this query to test inference:");
-        logger.info("PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>");
-        logger.info("PREFIX owl: <http://www.w3.org/2002/07/owl#>");
-        logger.info("PREFIX pokemon: <http://example.org/pokemon/>");
-        logger.info("SELECT ?pokemon ?name ?type WHERE {");
-        logger.info("  ?pokemon rdfs:subClassOf* pokemon:Pokemon ;");
-        logger.info("           owl:sameAs* ?equiv .");
-        logger.info("  { ?pokemon schema:name ?name } UNION");
-        logger.info("  { ?equiv schema:name ?name }");
-        logger.info("  ?pokemon pokemon:primaryType ?type");
-        logger.info("} LIMIT 5");
+        try {
+            // Add inference rules to the model
+            Model inferenceModel = InferenceHandler.addInferenceRules(model);
+            
+            // Clear existing data
+            dataset.getDefaultModel().removeAll();
+            
+            // Add the inference model
+            dataset.getDefaultModel().add(inferenceModel);
+            
+            logger.info("Loaded {} triples into the default graph (including inferred triples)", 
+                inferenceModel.size());
+            
+            // Log inference capabilities
+            logger.info("\nInference capabilities enabled:");
+            logger.info("1. RDFS subclass hierarchy");
+            logger.info("2. Transitive properties (owl:sameAs)");
+            logger.info("3. Property inheritance");
+            
+            // Log example queries
+            logger.info("\nExample inference queries to try:");
+            logger.info("\n1. Find Pokemon and their equivalent resources:");
+            logger.info("PREFIX owl: <http://www.w3.org/2002/07/owl#>");
+            logger.info("PREFIX schema: <http://schema.org/>");
+            logger.info("SELECT ?name ?altName WHERE {");
+            logger.info("  ?pokemon schema:name ?name ;");
+            logger.info("          owl:sameAs* ?same .");
+            logger.info("  ?same schema:name ?altName .");
+            logger.info("  FILTER(?name != ?altName)");
+            logger.info("} ORDER BY ?name");
+            
+            logger.info("\n2. Get type hierarchy including inferred types:");
+            logger.info("PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>");
+            logger.info("PREFIX pokemon: <http://example.org/pokemon/>");
+            logger.info("SELECT ?type ?superType WHERE {");
+            logger.info("  ?type rdfs:subClassOf+ ?superType .");
+            logger.info("} ORDER BY ?type");
+            
+        } catch (Exception e) {
+            logger.error("Error loading data with inference:", e);
+            // Load data without inference as fallback
+            dataset.getDefaultModel().removeAll();
+            dataset.getDefaultModel().add(model);
+            logger.info("Loaded {} triples into the default graph (without inference)", 
+                model.size());
+        }
     }
 
     public Dataset getDataset() {
