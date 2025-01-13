@@ -93,11 +93,32 @@ public class LinkedDataServer {
     }
 
     private String createHtmlResponse(String resourceUri) {
-        Map<String, Object> pokemonData = fetchPokemonData(resourceUri);
-        if (pokemonData.isEmpty()) {
-            return "<html><body><h1>404 - Pokemon Not Found</h1></body></html>";
+        Map<String, Object> data = fetchPokemonData(resourceUri);
+        if (data.isEmpty()) {
+            String template = "<!DOCTYPE html>\n" +
+                "<html>\n" +
+                "<head>\n" +
+                "    <title>404 - Pokemon Not Found</title>\n" +
+                "    <style>\n" +
+                "        body { font-family: 'Segoe UI', system-ui, sans-serif; margin: 40px; }\n" +
+                "        .error-container { text-align: center; padding: 40px; }\n" +
+                "        h1 { color: #dc3545; margin-bottom: 20px; }\n" +
+                "        .message { color: #6c757d; margin-bottom: 30px; }\n" +
+                "        .back-link { color: #007bff; text-decoration: none; }\n" +
+                "        .back-link:hover { text-decoration: underline; }\n" +
+                "    </style>\n" +
+                "</head>\n" +
+                "<body>\n" +
+                "    <div class=\"error-container\">\n" +
+                "        <h1>404 - Pokemon Not Found</h1>\n" +
+                "        <p class=\"message\">The Pokemon you're looking for doesn't exist in our database.</p>\n" +
+                "        <a href=\"/resource/0001\" class=\"back-link\">← Start from Bulbasaur</a>\n" +
+                "    </div>\n" +
+                "</body>\n" +
+                "</html>";
+            return template;
         }
-        return renderTemplate(pokemonData);
+        return renderTemplate(data);
     }
 
     private String createRdfResponse(String resourceUri) {
@@ -125,6 +146,20 @@ public class LinkedDataServer {
   }
 
     private Map<String, Object> fetchPokemonData(String resourceUri) {
+        Map<String, Object> data = new HashMap<>();
+        
+        // First check if the Pokemon exists
+        String checkQuery = 
+            "ASK WHERE { <" + resourceUri + "> a <http://example.org/pokemon/Pokemon> }";
+        
+        try (QueryExecution qexec = QueryExecutionFactory.create(checkQuery, dataset)) {
+            boolean exists = qexec.execAsk();
+            if (!exists) {
+                return data;
+            }
+        }
+
+        // Existing query for Pokemon data
         String query = 
             "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
             "PREFIX pokemon: <http://example.org/pokemon/>\n" +
@@ -136,10 +171,10 @@ public class LinkedDataServer {
             "  BIND(<" + resourceUri + "> AS ?pokemon)\n" +
             "  ?pokemon schema:name ?name ;\n" +
             "          schema:identifier ?id ;\n" +
-            "          pokemon:primaryType ?primaryType ;\n" +
-            "          schema:height ?height ;\n" +
-            "          schema:weight ?weight ;\n" +
-            "          pokemon:category ?category .\n" +
+            "          pokemon:primaryType ?primaryType .\n" +
+            "  OPTIONAL { ?pokemon schema:height ?height }\n" +
+            "  OPTIONAL { ?pokemon schema:weight ?weight }\n" +
+            "  OPTIONAL { ?pokemon pokemon:category ?category }\n" +
             "  OPTIONAL { ?pokemon pokemon:secondaryType ?secondaryType }\n" +
             "  OPTIONAL { ?pokemon pokemon:japaneseName ?japaneseName }\n" +
             "  OPTIONAL { ?pokemon pokemon:romajiName ?romajiName }\n" +
@@ -149,7 +184,6 @@ public class LinkedDataServer {
             "            FILTER(CONTAINS(STR(?wikidata), 'wikidata.org')) }\n" +
             "}\n";
 
-        Map<String, Object> data = new HashMap<>();
         try (QueryExecution qexec = QueryExecutionFactory.create(query, dataset)) {
             ResultSet results = qexec.execSelect();
             if (results.hasNext()) {
@@ -157,10 +191,16 @@ public class LinkedDataServer {
                 data.put("name", solution.getLiteral("name").getString());
                 data.put("id", solution.getLiteral("id").getString());
                 data.put("primaryType", solution.getLiteral("primaryType").getString());
-                data.put("height", formatDecimal(solution.getLiteral("height").getDouble()));
-                data.put("weight", formatDecimal(solution.getLiteral("weight").getDouble()));
-                data.put("category", solution.getLiteral("category").getString());
-                
+
+                if (solution.contains("height")) {
+                    data.put("height", formatDecimal(solution.getLiteral("height").getDouble()));
+                }
+                if (solution.contains("weight")) {
+                    data.put("weight", formatDecimal(solution.getLiteral("weight").getDouble()));
+                }
+                if (solution.contains("category")) {
+                    data.put("category", solution.getLiteral("category").getString());
+                }
                 if (solution.contains("secondaryType")) {
                     data.put("secondaryType", solution.getLiteral("secondaryType").getString());
                 }
@@ -180,8 +220,10 @@ public class LinkedDataServer {
                 // Add evolution chain data
                 addEvolutionData(data, resourceUri);
             }
+        } catch (Exception e) {
+            logger.error("Error fetching Pokemon data: ", e);
         }
-        
+
         return data;
     }
 

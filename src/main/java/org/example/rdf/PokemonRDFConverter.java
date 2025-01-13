@@ -37,7 +37,12 @@ public class PokemonRDFConverter {
         // Pokemon-specific properties
         addStringProperty(model, pokemonResource, BASE_URI + "japaneseName", pokemonInfo.get("jname"));
         addStringProperty(model, pokemonResource, BASE_URI + "romajiName", pokemonInfo.get("tmname"));
-        addStringProperty(model, pokemonResource, BASE_URI + "category", pokemonInfo.get("category"));
+        // Clean and add category
+        String category = pokemonInfo.get("category");
+        if (category != null && category.startsWith("{{tt|")) {
+            category = category.substring(5, category.indexOf("|"));
+        }
+        addStringProperty(model, pokemonResource, BASE_URI + "category", category);
         addStringProperty(model, pokemonResource, BASE_URI + "primaryType", pokemonInfo.get("type1"));
         if (pokemonInfo.containsKey("type2")) {
             addStringProperty(model, pokemonResource, BASE_URI + "secondaryType", pokemonInfo.get("type2"));
