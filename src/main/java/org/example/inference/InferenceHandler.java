@@ -105,7 +105,7 @@ public class InferenceHandler {
     private static void addTypeHierarchyInference(Model model) {
       // Add Pokemon type hierarchy
       Resource pokemonClass = model.createResource(BASE_URI + "Pokemon");
-      
+
       // Define all Pokemon types
       String[] types = {
           "Normal", "Fire", "Water", "Electric", "Grass", "Ice", 
@@ -115,7 +115,9 @@ public class InferenceHandler {
       
       // Create type classes with hierarchy
       for (String type : types) {
+          // Create type class
           Resource typeClass = model.createResource(BASE_URI + "Type/" + type);
+
           // Make type a subclass of Pokemon
           typeClass.addProperty(RDFS.subClassOf, pokemonClass);
           
@@ -123,17 +125,27 @@ public class InferenceHandler {
           Property primaryType = model.createProperty(BASE_URI + "primaryType");
           typeClass.addProperty(primaryType, type);
           
-          // Find all Pokemon of this type and add type class membership
+          // Find all Pokemon of this type and establish relationships
           StmtIterator pokemonIter = model.listStatements(null, primaryType, type);
           while (pokemonIter.hasNext()) {
               Statement stmt = pokemonIter.next();
-              stmt.getSubject().addProperty(RDF.type, typeClass);
+              Resource pokemon = stmt.getSubject();
+              
+              // Add type class membership
+              pokemon.addProperty(RDF.type, typeClass);
+              
+              // Add inherited type from Pokemon class
+              pokemon.addProperty(RDF.type, pokemonClass);
+              
+              // Explicitly add subclass relationship
+              Resource pokemonType = model.createResource(BASE_URI + pokemon.getLocalName() + "/type");
+              pokemonType.addProperty(RDFS.subClassOf, typeClass);
+              pokemon.addProperty(RDF.type, pokemonType);
           }
       }
       
-      // Now add inference for type hierarchy
+      // Add transitive closure for type hierarchy
       addTransitiveSubClassClosure(model);
-      addTypeInference(model);
     }
 
     public static Model addInferenceRules(Model baseModel) {
@@ -143,27 +155,51 @@ public class InferenceHandler {
       // Add inference rules in specific order
       addTypeHierarchyInference(inferenceModel);
       addSameAsInference(inferenceModel);
+      addPropertyInheritance(inferenceModel);
       addCharacteristicHierarchy(inferenceModel);
       
       return inferenceModel;
     }
 
-    private static void addTypeInference(Model model) {
-        StmtIterator typeIter = model.listStatements(null, RDF.type, (RDFNode)null);
+    private static void addPropertyInheritance(Model model) {
+        StmtIterator sameAsIter = model.listStatements(null, OWL.sameAs, (RDFNode)null);
         List<Statement> newStatements = new ArrayList<>();
         
-        while (typeIter.hasNext()) {
-            Statement typeStmt = typeIter.next();
-            if (typeStmt.getObject().isResource()) {
-                StmtIterator superIter = model.listStatements(
-                    typeStmt.getObject().asResource(), RDFS.subClassOf, (RDFNode)null);
-                while (superIter.hasNext()) {
-                    Statement superStmt = superIter.next();
-                    newStatements.add(model.createStatement(
-                        typeStmt.getSubject(), RDF.type, superStmt.getObject()));
+        while (sameAsIter.hasNext()) {
+            Statement sameAsStmt = sameAsIter.next();
+            if (sameAsStmt.getObject().isResource()) {
+                Resource subject = sameAsStmt.getSubject();
+                Resource object = sameAsStmt.getObject().asResource();
+                
+                // Copy all properties from subject to object (except sameAs)
+                StmtIterator subjectProps = subject.listProperties();
+                while (subjectProps.hasNext()) {
+                    Statement propStmt = subjectProps.next();
+                    if (!propStmt.getPredicate().equals(OWL.sameAs)) {
+                        if (!model.contains(object, propStmt.getPredicate(), propStmt.getObject())) {
+                            newStatements.add(model.createStatement(
+                                object, propStmt.getPredicate(), propStmt.getObject()));
+                        }
+                    }
+                }
+                
+                // Copy all properties from object to subject (except sameAs)
+                StmtIterator objectProps = object.listProperties();
+                while (objectProps.hasNext()) {
+                    Statement propStmt = objectProps.next();
+                    if (!propStmt.getPredicate().equals(OWL.sameAs)) {
+                        if (!model.contains(subject, propStmt.getPredicate(), propStmt.getObject())) {
+                            newStatements.add(model.createStatement(
+                                subject, propStmt.getPredicate(), propStmt.getObject()));
+                        }
+                    }
                 }
             }
         }
+        
+        // Add all new statements to the model
         model.add(newStatements);
+        
+        logger.debug("Added {} property inheritance statements", newStatements.size());
     }
 }

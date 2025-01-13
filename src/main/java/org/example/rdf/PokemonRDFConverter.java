@@ -40,12 +40,21 @@ public class PokemonRDFConverter {
             Integer.parseInt(pokemonInfo.getOrDefault("ndex", "0")));
         Resource pokemonResource = model.createResource(BASE_URI + "pokemon/" + pokemonId);
     
+        // Add base type
+        pokemonResource.addProperty(RDF.type, model.createResource(BASE_URI + "Pokemon"));
+        
         // Add type class membership
         String primaryType = pokemonInfo.get("type1");
         if (primaryType != null) {
             Resource typeClass = model.createResource(BASE_URI + "Type/" + primaryType);
             pokemonResource.addProperty(RDF.type, typeClass);
             pokemonResource.addProperty(POKEMON_PRIMARY_TYPE, primaryType);
+            
+            // Add explicit type resource
+            Resource pokemonType = model.createResource(BASE_URI + 
+                pokemonResource.getLocalName() + "/type");
+            pokemonType.addProperty(RDFS.subClassOf, typeClass);
+            pokemonResource.addProperty(RDF.type, pokemonType);
         }
         
         // Add external links with proper schema:name
@@ -131,29 +140,33 @@ public class PokemonRDFConverter {
         }
     }
 
-    private void addExternalLinks(Model model, Resource resource, 
-                                Map<String, String> pokemonInfo) {
+    private void addExternalLinks(Model model, Resource resource, Map<String, String> pokemonInfo) {
         String name = pokemonInfo.get("name");
         if (name != null) {
-            // Add DBpedia link
-            String dbpediaUri = "http://dbpedia.org/resource/" + 
-                name.replace(" ", "_");
+            // Add DBpedia link with name
+            String dbpediaUri = "http://dbpedia.org/resource/" + name.replace(" ", "_");
             Resource dbpediaResource = model.createResource(dbpediaUri);
+            // Add name to DBpedia resource
+            dbpediaResource.addProperty(SCHEMA_NAME, name);
             resource.addProperty(OWL.sameAs, dbpediaResource);
-
+    
             // Add Wikidata link if available
             String wikidataId = getWikidataId(name);
             if (wikidataId != null) {
                 String wikidataUri = "http://www.wikidata.org/entity/" + wikidataId;
                 Resource wikidataResource = model.createResource(wikidataUri);
+                // Add name to Wikidata resource
+                wikidataResource.addProperty(SCHEMA_NAME, name);
                 resource.addProperty(OWL.sameAs, wikidataResource);
             }
-
+    
             // Add Bulbapedia link
             String bulbapediaUri = "https://bulbapedia.bulbagarden.net/wiki/" + 
                 name.replace(" ", "_") + "_(Pokémon)";
-            resource.addProperty(model.createProperty(SCHEMA_URI + "sameAs"), 
-                model.createResource(bulbapediaUri));
+            Resource bulbapediaResource = model.createResource(bulbapediaUri);
+            // Add name to Bulbapedia resource
+            bulbapediaResource.addProperty(SCHEMA_NAME, name);
+            resource.addProperty(model.createProperty(SCHEMA_URI + "sameAs"), bulbapediaResource);
         }
     }
 
