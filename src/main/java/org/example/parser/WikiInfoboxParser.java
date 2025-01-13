@@ -38,7 +38,15 @@ public class WikiInfoboxParser {
             while (paramMatcher.find()) {
                 String key = paramMatcher.group(1).trim();
                 String value = cleanWikiText(paramMatcher.group(2).trim());
-                parameters.put(key, value);
+                
+                // Special handling for category field
+                if (key.equals("category")) {
+                    value = handleCategory(value);
+                }
+                
+                if (!value.isEmpty()) {
+                    parameters.put(key, value);
+                }
             }
         } else {
             logger.warn("No Pokemon infobox found in the wikitext");
@@ -47,18 +55,31 @@ public class WikiInfoboxParser {
         return parameters;
     }
 
+    private String handleCategory(String value) {
+        if (value.startsWith("{{tt|")) {
+            // Extract category from template format {{tt|Category|Description}}
+            int pipeIndex = value.indexOf('|', 5);
+            if (pipeIndex > 0) {
+                return value.substring(5, pipeIndex);
+            }
+        }
+        return value;
+    }
+
     private String cleanWikiText(String text) {
         if (text == null || text.isEmpty()) {
             return "";
         }
 
-        // Remove wiki markup like [[]] and ''
-        text = text.replaceAll("\\[\\[(?:[^|\\]]*\\|)?([^\\]]+)\\]\\]", "$1");
-        text = text.replaceAll("'''?([^']+)'''?", "$1");
-        text = text.replaceAll("''([^']+)''", "$1");
-        text = text.replaceAll("<!--.*?-->", "");
-        text = text.replaceAll("<br\\s*/?\\s*>", " ");
-        text = text.replaceAll("\\s+", " ");
+        // Remove wiki markup
+        text = text.replaceAll("\\{\\{tt\\|([^|]+)\\|[^}]+\\}\\}", "$1"); // Handle {{tt|text|description}}
+        text = text.replaceAll("\\[\\[(?:[^|\\]]*\\|)?([^\\]]+)\\]\\]", "$1"); // Handle [[link|text]]
+        text = text.replaceAll("'''?([^']+)'''?", "$1"); // Handle '''text'''
+        text = text.replaceAll("''([^']+)''", "$1"); // Handle ''text''
+        text = text.replaceAll("<!--.*?-->", ""); // Remove comments
+        text = text.replaceAll("<br\\s*/?\\s*>", " "); // Handle line breaks
+        text = text.replaceAll("\\s+", " "); // Normalize whitespace
+
         return text.trim();
     }
 }

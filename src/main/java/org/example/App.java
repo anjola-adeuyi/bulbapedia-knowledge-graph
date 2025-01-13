@@ -44,9 +44,18 @@ public class App {
             
             // Process each Pokemon in the chain
             for (Map<String, String> pokemonData : evolutionChainData) {
-                Map<String, String> pokemonInfo = parser.processWikitext(pokemonData);
-                Model pokemonModel = converter.convertToRDF(pokemonInfo);
-                combinedModel.add(pokemonModel);
+                try {
+                    Map<String, String> pokemonInfo = parser.processWikitext(pokemonData);
+                    if (pokemonInfo != null && !pokemonInfo.isEmpty()) {
+                        logger.debug("Processing Pokemon: {}", pokemonInfo.get("name"));
+                        Model pokemonModel = converter.convertToRDF(pokemonInfo);
+                        combinedModel.add(pokemonModel);
+                    } else {
+                        logger.warn("Failed to process Pokemon data: {}", pokemonData.get("title"));
+                    }
+                } catch (Exception e) {
+                    logger.error("Error processing Pokemon: {}", pokemonData.get("title"), e);
+                }
             }
 
             // Add multilingual labels

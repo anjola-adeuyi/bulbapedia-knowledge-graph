@@ -276,122 +276,104 @@ public class LinkedDataServer {
     }
 
     private String renderTemplate(Map<String, Object> data) {
-        String result = htmlTemplate;
+      if (data == null || data.isEmpty()) {
+          // return createNotFoundPage();
+          return null;
+      }
+  
+      String result = htmlTemplate;
+  
+      // Safely get required fields with defaults
+      String name = String.valueOf(data.getOrDefault("name", "Unknown"));
+      String id = String.valueOf(data.getOrDefault("id", "0000"));
+      String primaryType = String.valueOf(data.getOrDefault("primaryType", "Normal"));
+      String height = String.valueOf(data.getOrDefault("height", "0.0"));
+      String weight = String.valueOf(data.getOrDefault("weight", "0.0"));
+      String category = String.valueOf(data.getOrDefault("category", "Unknown"));
+  
+      // Replace basic fields
+      result = result.replace("${name}", name);
+      result = result.replace("${id}", id);
+      result = result.replace("${height}", height);
+      result = result.replace("${weight}", weight);
+      result = result.replace("${category}", category + " Pokemon");
+  
+      // Handle type badges
+      StringBuilder typeHtml = new StringBuilder();
+      typeHtml.append(String.format("<span class=\"type-badge\" style=\"background-color: var(--%s-color)\">%s</span>", 
+          primaryType.toLowerCase(), primaryType));
+      
+      if (data.containsKey("secondaryType")) {
+          String secondaryType = String.valueOf(data.get("secondaryType"));
+          typeHtml.append(String.format("<span class=\"type-badge\" style=\"background-color: var(--%s-color)\">%s</span>", 
+              secondaryType.toLowerCase(), secondaryType));
+      }
+      result = result.replace("${typeBadges}", typeHtml.toString());
+  
+      // Handle names section
+      StringBuilder namesHtml = new StringBuilder();
+      namesHtml.append(String.format("<div class=\"stat-row\"><span class=\"stat-label\">English</span><span>%s</span></div>", name));
+      
+      if (data.containsKey("japaneseName")) {
+          namesHtml.append(String.format("<div class=\"stat-row\"><span class=\"stat-label\">Japanese</span><span>%s</span></div>", 
+              data.get("japaneseName")));
+      }
+      if (data.containsKey("romajiName")) {
+          namesHtml.append(String.format("<div class=\"stat-row\"><span class=\"stat-label\">Rōmaji</span><span>%s</span></div>", 
+              data.get("romajiName")));
+      }
+      result = result.replace("${namesSection}", namesHtml.toString());
+  
+      // Handle evolution chain
+      @SuppressWarnings("unchecked")
+      Map<String, String> prevPokemon = (Map<String, String>) data.get("prevPokemon");
+      String prevHtml = "";
+      if (prevPokemon != null) {
+          prevHtml = String.format(
+              "<a href=\"/resource/%s\" class=\"pokemon-card\">" +
+              "<h3>%s</h3>" +
+              "<p>#%s</p>" +
+              "</a>" +
+              "<span class=\"evolution-arrow\">→</span>",
+              prevPokemon.get("id"), prevPokemon.get("name"), prevPokemon.get("id"));
+      }
+      result = result.replace("${prevPokemonSection}", prevHtml);
+  
+      @SuppressWarnings("unchecked")
+      Map<String, String> nextPokemon = (Map<String, String>) data.get("nextPokemon");
+      String nextHtml = "";
+      if (nextPokemon != null) {
+          nextHtml = String.format(
+              "<span class=\"evolution-arrow\">→</span>" +
+              "<a href=\"/resource/%s\" class=\"pokemon-card\">" +
+              "<h3>%s</h3>" +
+              "<p>#%s</p>" +
+              "</a>",
+              nextPokemon.get("id"), nextPokemon.get("name"), nextPokemon.get("id"));
+      }
+      result = result.replace("${nextPokemonSection}", nextHtml);
+  
+      // Handle external links
+      StringBuilder linksHtml = new StringBuilder();
+      linksHtml.append(String.format(
+          "<a href=\"https://bulbapedia.bulbagarden.net/wiki/%s_(Pok%%C3%%A9mon)\" " +
+          "class=\"external-link\" target=\"_blank\" rel=\"noopener noreferrer\">Bulbapedia</a>",
+          name));
+  
+      if (data.containsKey("dbpediaLink")) {
+          linksHtml.append(String.format(
+              "<a href=\"%s\" class=\"external-link\" target=\"_blank\" rel=\"noopener noreferrer\">DBpedia</a>",
+              data.get("dbpediaLink")));
+      }
+      if (data.containsKey("wikidataLink")) {
+          linksHtml.append(String.format(
+              "<a href=\"%s\" class=\"external-link\" target=\"_blank\" rel=\"noopener noreferrer\">Wikidata</a>",
+              data.get("wikidataLink")));
+      }
+      result = result.replace("${externalLinksSection}", linksHtml.toString());
 
-        // Handle primary type badge
-        String type = (String) data.get("primaryType");
-        String typeBadge = String.format(
-            "<span class=\"type-badge\" style=\"background-color: var(--%s-color)\">%s</span>",
-            type.toLowerCase(), type
-        );
-
-        // Handle secondary type badge
-        if (data.containsKey("secondaryType")) {
-            String secondaryType = (String) data.get("secondaryType");
-            typeBadge += String.format(
-                "<span class=\"type-badge\" style=\"background-color: var(--%s-color)\">%s</span>",
-                secondaryType.toLowerCase(), secondaryType
-            );
-        }
-        result = result.replace("${typeBadges}", typeBadge);
-
-        // Handle basic properties
-        result = result.replace("${name}", (String) data.get("name"));
-        result = result.replace("${id}", (String) data.get("id"));
-        result = result.replace("${height}", data.get("height").toString());
-        result = result.replace("${weight}", data.get("weight").toString());
-        result = result.replace("${category}", (String) data.get("category"));
-
-        // Handle names section
-        String englishName = (String) data.get("name");
-        String japaneseName = (String) data.getOrDefault("japaneseName", "");
-        String romajiName = (String) data.getOrDefault("romajiName", "");
-
-        StringBuilder namesHtml = new StringBuilder();
-        namesHtml.append("<div class=\"stat-row\"><span class=\"stat-label\">English</span><span>")
-                .append(englishName)
-                .append("</span></div>");
-
-        if (!japaneseName.isEmpty()) {
-            namesHtml.append("<div class=\"stat-row\"><span class=\"stat-label\">Japanese</span><span>")
-                    .append(japaneseName)
-                    .append("</span></div>");
-        }
-
-        if (!romajiName.isEmpty()) {
-            namesHtml.append("<div class=\"stat-row\"><span class=\"stat-label\">Rōmaji</span><span>")
-                    .append(romajiName)
-                    .append("</span></div>");
-        }
-        result = result.replace("${namesSection}", namesHtml.toString());
-
-        // Handle evolution chain
-        String prevPokemonHtml = "";
-        @SuppressWarnings("unchecked")
-        Map<String, String> prevPokemon = (Map<String, String>) data.get("prevPokemon");
-        if (prevPokemon != null) {
-            prevPokemonHtml = String.format(
-                "<a href=\"/resource/%s\" class=\"pokemon-card\">" +
-                "<h3>%s</h3>" +
-                "<p>#%s</p>" +
-                "</a>" +
-                "<span class=\"evolution-arrow\">→</span>",
-                prevPokemon.get("id"),
-                prevPokemon.get("name"),
-                prevPokemon.get("id")
-            );
-        }
-
-        String nextPokemonHtml = "";
-        @SuppressWarnings("unchecked")
-        Map<String, String> nextPokemon = (Map<String, String>) data.get("nextPokemon");
-        if (nextPokemon != null) {
-            nextPokemonHtml = String.format(
-                "<span class=\"evolution-arrow\">→</span>" +
-                "<a href=\"/resource/%s\" class=\"pokemon-card\">" +
-                "<h3>%s</h3>" +
-                "<p>#%s</p>" +
-                "</a>",
-                nextPokemon.get("id"),
-                nextPokemon.get("name"),
-                nextPokemon.get("id")
-            );
-        }
-
-        // Replace evolution chain placeholders
-        result = result.replace("${prevPokemonSection}", prevPokemonHtml);
-        result = result.replace("${nextPokemonSection}", nextPokemonHtml);
-
-        // Handle external links
-        StringBuilder externalLinksHtml = new StringBuilder();
-        externalLinksHtml.append(String.format(
-            "<a href=\"https://bulbapedia.bulbagarden.net/wiki/%s_(Pok%%C3%%A9mon)\" " +
-            "class=\"external-link\" target=\"_blank\" rel=\"noopener noreferrer\">Bulbapedia</a>",
-            englishName
-        ));
-
-        if (data.containsKey("dbpediaLink")) {
-            externalLinksHtml.append(String.format(
-                "<a href=\"%s\" class=\"external-link\" target=\"_blank\" rel=\"noopener noreferrer\">DBpedia</a>",
-                data.get("dbpediaLink")
-            ));
-        }
-
-        if (data.containsKey("wikidataLink")) {
-            externalLinksHtml.append(String.format(
-                "<a href=\"%s\" class=\"external-link\" target=\"_blank\" rel=\"noopener noreferrer\">Wikidata</a>",
-                data.get("wikidataLink")
-            ));
-        }
-
-        result = result.replace("${externalLinksSection}", externalLinksHtml.toString());
-
-        // Clean up any remaining conditional statements
-        result = result.replaceAll("\\$\\{\\w+\\s*!=\\s*null\\s*\\?\\s*'[^']*'\\s*:\\s*''\\}", "");
-        result = result.replaceAll("\\$\\{[^}]+\\}", ""); // Clean up any remaining variables
-
-        return result;
-    }
+      return result;
+  }
 
     public void stop() {
         Spark.stop();
