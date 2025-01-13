@@ -40,15 +40,32 @@ public class PokemonRDFConverter {
             Integer.parseInt(pokemonInfo.getOrDefault("ndex", "0")));
         Resource pokemonResource = model.createResource(BASE_URI + "pokemon/" + pokemonId);
     
-        // Add type hierarchy
-        Resource pokemonClass = model.createResource(BASE_URI + "Pokemon");
+        // Add type class membership
         String primaryType = pokemonInfo.get("type1");
         if (primaryType != null) {
             Resource typeClass = model.createResource(BASE_URI + "Type/" + primaryType);
-            typeClass.addProperty(RDFS.subClassOf, pokemonClass);
             pokemonResource.addProperty(RDF.type, typeClass);
+            pokemonResource.addProperty(POKEMON_PRIMARY_TYPE, primaryType);
         }
-        pokemonResource.addProperty(RDF.type, pokemonClass);
+        
+        // Add external links with proper schema:name
+        String name = pokemonInfo.get("name");
+        if (name != null) {
+            // DBpedia link
+            String dbpediaUri = "http://dbpedia.org/resource/" + name.replace(" ", "_");
+            Resource dbpediaResource = model.createResource(dbpediaUri)
+                .addProperty(SCHEMA_NAME, name);
+            pokemonResource.addProperty(OWL.sameAs, dbpediaResource);
+            
+            // Wikidata link
+            String wikidataId = getWikidataId(name);
+            if (wikidataId != null) {
+                Resource wikidataResource = model.createResource(
+                    "http://www.wikidata.org/entity/" + wikidataId)
+                    .addProperty(SCHEMA_NAME, name);
+                pokemonResource.addProperty(OWL.sameAs, wikidataResource);
+            }
+        }
     
         // Add basic properties with validation
         addValidatedProperty(model, pokemonResource, SCHEMA_NAME, pokemonInfo.get("name"));
