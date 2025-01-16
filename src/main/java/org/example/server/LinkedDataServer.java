@@ -8,7 +8,10 @@ import spark.Request;
 import spark.Response;
 import spark.Spark;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -74,14 +77,28 @@ public class LinkedDataServer {
 
         // Add root route
         Spark.get("/", (req, res) -> {
-            res.redirect("/index.html");
-            return null;
+            res.type("text/html");
+            return readIndexHtml();
         });
 
         // Handle content negotiation
         Spark.get("/resource/:id", this::handleResourceRequest);
         
         logger.info("Linked Data interface started on port {}", port);
+    }
+
+    private String readIndexHtml() {
+        try {
+            InputStream is = getClass().getResourceAsStream("/static/index.html");
+            if (is == null) {
+                logger.error("Could not find index.html");
+                return "<h1>Error: index.html not found</h1>";
+            }
+            return new String(is.readAllBytes(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            logger.error("Error reading index.html", e);
+            return "<h1>Error loading page</h1>";
+        }
     }
 
     private Object handleResourceRequest(Request request, Response response) {
