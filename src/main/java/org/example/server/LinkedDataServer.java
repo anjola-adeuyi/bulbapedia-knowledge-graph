@@ -58,6 +58,10 @@ public class LinkedDataServer {
     }
 
     public void start() {
+        // Serve static files
+        // Was facing issues initially with the path, so I realized that static files must be configured before routes
+        Spark.staticFiles.location("/static");
+
         Spark.port(port);
         
         // Set up CORS headers
@@ -67,9 +71,6 @@ public class LinkedDataServer {
             response.header("Access-Control-Allow-Headers", 
                           "Content-Type,Authorization,X-Requested-With,Content-Length,Accept,Origin");
         });
-
-        // Serve static files
-        Spark.staticFiles.location("/static");
 
         // Add root route
         Spark.get("/", (req, res) -> {
