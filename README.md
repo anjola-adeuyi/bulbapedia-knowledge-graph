@@ -6,12 +6,13 @@ A Semantic Web application that builds a Knowledge Graph (KG) from Bulbapedia, s
 
 ### 1. Knowledge Graph Generation
 
-- Extracts data from Bulbapedia's wiki pages
-- Converts wiki content into RDF triples
+- Extracts data from Bulbapedia's wiki pages using MediaWiki API
+- Converts wiki content into RDF triples with schema.org alignment
 - Implements proper ontology and vocabulary design
-- Reuses schema.org terms where appropriate
-- Maintains multilingual labels
+- Maintains multilingual labels (English, Japanese, Romaji)
 - Includes entity linking to DBpedia and Wikidata
+- Supports multiple Pokemon generations
+- Processes evolution chains with type preservation
 
 ### 2. Data Validation
 
@@ -19,18 +20,26 @@ A Semantic Web application that builds a Knowledge Graph (KG) from Bulbapedia, s
 - Constraints on Pokémon properties (height, weight, types)
 - Type hierarchy validation
 - Property cardinality rules
+- RDF quality checks using Jena validation
 
 ### 3. Query Interface
 
-- SPARQL endpoint for complex queries
-- Support for inference in queries
+- SPARQL endpoint (port 3330)
+- Support for inference in queries:
+  - RDFS subclass hierarchy
+  - Transitive properties (owl:sameAs)
+  - Property inheritance
 - Predefined useful queries for common operations
 
 ### 4. Linked Data Interface
 
 - Content negotiation (HTML/RDF)
-- Human-readable HTML views
-- Machine-readable RDF views
+- Human-readable HTML views with:
+  - Pokemon details
+  - Type information
+  - Evolution chains
+  - External links
+- Machine-readable RDF views (Turtle format)
 - Proper hyperlinking between resources
 
 ## Prerequisites
@@ -80,9 +89,11 @@ curl -H "Accept: text/turtle" http://localhost:3331/resource/0001
 
 ## Testing The Features
 
+## API Documentation
+
 ### 1. SPARQL Endpoint (Port 3330)
 
-#### Using curl:
+#### Using curl
 
 ```bash
 # Example query to get all Pokémon names
@@ -95,14 +106,14 @@ curl -X POST \
   http://localhost:3330/pokemon/query
 ```
 
-#### Using Postman:
+#### Using Postman
 
 1. Create a new POST request to `http://localhost:3330/pokemon/query`
 2. Set Content-Type header to `application/sparql-query`
 3. In the body, enter your SPARQL query
 4. Send the request
 
-#### Example Queries:
+#### Example Queries
 
 1. Get Pokémon and their types:
 
@@ -140,12 +151,12 @@ ORDER BY ?baseName ?evolvedName
 
 ### 2. Linked Data Interface (Port 3331)
 
-#### Browser Access:
+#### Browser Access
 
 1. Visit `http://localhost:3331/resource/0001` for Bulbasaur
 2. Navigate through Pokémon using the evolution chain links
 
-#### Programmatic Access:
+#### Programmatic Access
 
 ```bash
 # Get RDF data (Turtle format)
@@ -184,11 +195,35 @@ bulbapedia-knowledge-graph/
 │       │       ├── server/                     # Web servers
 │       │       └── validation/                 # SHACL validation
 │       └── resources/
+│           ├── static/                         # Web interface
 │           ├── templates/                      # HTML templates
 │           └── queries/                        # SPARQL queries
 ├── pokemon.ttl                                 # Generated KG
 ├── pokemon-shapes.ttl                          # SHACL shapes
 └── pom.xml
+```
+
+### Components
+
+- **BulbapediaClient**: Handles API requests to Bulbapedia
+- **WikiInfoboxParser**: Extracts structured data from wiki pages
+- **PokemonRDFConverter**: Converts parsed data to RDF
+- **InferenceHandler**: Implements RDFS and OWL inference
+- **LinkedDataServer**: Provides web interface and content negotiation
+- **PokemonFusekiServer**: Manages SPARQL endpoint
+
+### Access the interfaces
+
+- SPARQL endpoint: http://localhost:3330/pokemon/query
+- Linked Data interface: http://localhost:3331/
+- Example Pokemon: http://localhost:3331/resource/0001
+
+### Validate RDF
+
+```java
+Model model = ModelFactory.createDefaultModel();
+model.read("pokemon.ttl", "TURTLE");
+System.out.println("Valid RDF with " + model.size() + " triples");
 ```
 
 ## Features Implementation
