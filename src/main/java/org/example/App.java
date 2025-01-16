@@ -2,7 +2,6 @@ package org.example;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.example.client.BulbapediaClient;
 import org.example.client.DataCollectionCoordinator;
 import org.example.linking.ExternalLinker;
 import org.example.parser.MultilingualDataHandler;
@@ -22,10 +21,10 @@ public class App {
     public static void main(String[] args) {
         logger.info("Starting Bulbapedia Knowledge Graph Generator");
         PokemonFusekiServer fusekiServer = null;
+        LinkedDataServer ldServer = null;
         
         try {
             // Initialize components
-            BulbapediaClient client = new BulbapediaClient();
             PokemonRDFConverter converter = new PokemonRDFConverter();
             
             // Create a combined model for all Pokemon
@@ -87,7 +86,7 @@ public class App {
             fusekiServer.loadData(combinedModel);
 
             // Start Linked Data interface
-            LinkedDataServer ldServer = new LinkedDataServer(fusekiServer.getDataset(), 3331);
+            ldServer = new LinkedDataServer(fusekiServer.getDataset(), 3331);
             ldServer.start();
 
             // Keep the server running
@@ -97,6 +96,10 @@ public class App {
         } catch (Exception e) {
             logger.error("Error occurred:", e);
         } finally {
+            // Stop servers in reverse order
+            if (ldServer != null) {
+                ldServer.stop();
+            }
             if (fusekiServer != null) {
                 fusekiServer.stop();
             }
