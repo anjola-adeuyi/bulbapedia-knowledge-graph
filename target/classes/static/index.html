@@ -7,26 +7,50 @@
       content="width=device-width, initial-scale=1.0"
     />
     <title>Pokemon KG Explorer</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
-      rel="stylesheet"
-    />
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 2rem;
+        line-height: 1.5;
+      }
+      .container {
+        max-width: 1000px;
+        margin: 0 auto;
+      }
+      textarea {
+        width: 100%;
+        min-height: 200px;
+        font-family: monospace;
+        padding: 1rem;
+        margin: 1rem 0;
+      }
+      button {
+        background: #4caf50;
+        color: white;
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      #results {
+        margin-top: 2rem;
+        padding: 1rem;
+        background: #f5f5f5;
+        border-radius: 4px;
+        overflow-x: auto;
+      }
+    </style>
   </head>
-  <body class="bg-gray-100 p-8">
-    <div class="max-w-4xl mx-auto">
-      <h1 class="text-3xl font-bold mb-8">Pokemon Knowledge Graph Explorer</h1>
+  <body>
+    <div class="container">
+      <h1>Pokemon Knowledge Graph Explorer</h1>
 
-      <div class="bg-white p-6 rounded-lg shadow-lg mb-8">
-        <h2 class="text-xl font-semibold mb-4">SPARQL Query</h2>
-        <label
-          for="query"
-          class="block text-sm font-medium text-gray-700"
-          >SPARQL Query</label
-        >
+      <div>
+        <h2>SPARQL Query</h2>
+        <label for="query">SPARQL Query</label>
         <textarea
           id="query"
           rows="10"
-          class="w-full p-4 border rounded mb-4 font-mono"
           placeholder="Enter your SPARQL query here"
         >
           PREFIX pokemon: <http://example.org/pokemon/>
@@ -37,19 +61,11 @@
               pokemon:primaryType ?type .
           } LIMIT 10
         </textarea>
-        <button
-          onclick="executeQuery()"
-          class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600"
-        >
-          Execute Query
-        </button>
+        <button onclick="executeQuery()">Execute Query</button>
       </div>
 
-      <div
-        id="results"
-        class="bg-white p-6 rounded-lg shadow-lg overflow-x-auto"
-      >
-        <pre class="font-mono text-sm"></pre>
+      <div id="results">
+        <pre></pre>
       </div>
     </div>
 
