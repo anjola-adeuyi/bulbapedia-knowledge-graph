@@ -8,6 +8,7 @@ import org.example.linking.ExternalLinker;
 import org.example.parser.MultilingualDataHandler;
 import org.example.rdf.PokemonRDFConverter;
 import org.example.server.PokemonFusekiServer;
+import org.example.validation.RDFValidator;
 import org.example.server.LinkedDataServer;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -71,6 +72,14 @@ public class App {
             // Now save the combined model
             converter.saveModel(combinedModel, outputFile);
             logger.info("RDF data saved to " + outputFile);
+
+            logger.info("Validating RDF data...");
+            RDFValidator.ValidationResult validationResult = RDFValidator.validateRDF("pokemon.ttl");
+            if (validationResult.isValid()) {
+                logger.info("RDF validation successful: {}", validationResult.getMessage());
+            } else {
+                logger.error("RDF validation failed: {}", validationResult.getMessage());
+            }
 
             // Start Fuseki server and load data
             fusekiServer = new PokemonFusekiServer();

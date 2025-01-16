@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <title>Pokemon KG Explorer</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto">
+      <h1 class="text-3xl font-bold mb-8">Pokemon Knowledge Graph Explorer</h1>
+
+      <div class="bg-white p-6 rounded-lg shadow-lg mb-8">
+        <h2 class="text-xl font-semibold mb-4">SPARQL Query</h2>
+        <label
+          for="query"
+          class="block text-sm font-medium text-gray-700"
+          >SPARQL Query</label
+        >
+        <textarea
+          id="query"
+          rows="10"
+          class="w-full p-4 border rounded mb-4 font-mono"
+          placeholder="Enter your SPARQL query here"
+        >
+          PREFIX pokemon: <http://example.org/pokemon/>
+          PREFIX schema: <http://schema.org/>
+
+          SELECT ?name ?type WHERE {
+            ?s schema:name ?name ;
+              pokemon:primaryType ?type .
+          } LIMIT 10
+        </textarea>
+        <button
+          onclick="executeQuery()"
+          class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600"
+        >
+          Execute Query
+        </button>
+      </div>
+
+      <div
+        id="results"
+        class="bg-white p-6 rounded-lg shadow-lg overflow-x-auto"
+      >
+        <pre class="font-mono text-sm"></pre>
+      </div>
+    </div>
+
+    <script>
+      async function executeQuery() {
+        const query = document.getElementById('query').value;
+        try {
+          const response = await fetch('http://localhost:3330/pokemon/query', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/sparql-query',
+              Accept: 'application/json',
+            },
+            body: query,
+          });
+          const data = await response.json();
+          document.querySelector('#results pre').textContent = JSON.stringify(data, null, 2);
+        } catch (error) {
+          document.querySelector('#results pre').textContent = `Error: ${error.message}`;
+        }
+      }
+    </script>
+  </body>
+</html>

@@ -2,15 +2,12 @@ package org.example.server;
 
 import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.riot.Lang;
-import org.apache.jena.riot.RDFDataMgr;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spark.Request;
 import spark.Response;
 import spark.Spark;
 
-import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -69,6 +66,15 @@ public class LinkedDataServer {
             response.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
             response.header("Access-Control-Allow-Headers", 
                           "Content-Type,Authorization,X-Requested-With,Content-Length,Accept,Origin");
+        });
+
+        // Serve static files
+        Spark.staticFiles.location("/static");
+
+        // Add root route
+        Spark.get("/", (req, res) -> {
+            res.redirect("/index.html");
+            return null;
         });
 
         // Handle content negotiation
