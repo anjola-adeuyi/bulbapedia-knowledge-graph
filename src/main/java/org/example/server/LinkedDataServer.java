@@ -122,28 +122,23 @@ public class LinkedDataServer {
     }
 
     private String createRdfResponse(String resourceUri) {
-      String query = 
-          "CONSTRUCT { <" + resourceUri + "> ?p ?o . " +
-          "            ?s pokemon:evolvesFrom <" + resourceUri + "> . " +
-          "            <" + resourceUri + "> pokemon:evolvesFrom ?prev }" +
-          "WHERE { " +
-          "  { <" + resourceUri + "> ?p ?o } " +
-          "  UNION " +
-          "  { ?s pokemon:evolvesFrom <" + resourceUri + "> } " +
-          "  UNION " +
-          "  { <" + resourceUri + "> pokemon:evolvesFrom ?prev } " +
-          "}";
-
-      try (QueryExecution qexec = QueryExecutionFactory.create(query, dataset)) {
-          Model description = qexec.execConstruct();
-          if (description.isEmpty()) {
-              return "# Resource not found";
-          }
-          StringWriter writer = new StringWriter();
-          RDFDataMgr.write(writer, description, Lang.TURTLE);
-          return writer.toString();
-      }
-  }
+        try {
+            String query = String.format(
+                "CONSTRUCT { <%s> ?p ?o } WHERE { <%s> ?p ?o }",
+                resourceUri, resourceUri
+            );
+            
+            QueryExecution qexec = QueryExecutionFactory.create(query, dataset);
+            Model description = qexec.execConstruct();
+            
+            StringWriter writer = new StringWriter();
+            description.write(writer, "TURTLE");
+            return writer.toString();
+        } catch (Exception e) {
+            logger.error("Error creating RDF response:", e);
+            return "# Error generating RDF";
+        }
+    }
 
     private Map<String, Object> fetchPokemonData(String resourceUri) {
         Map<String, Object> data = new HashMap<>();
