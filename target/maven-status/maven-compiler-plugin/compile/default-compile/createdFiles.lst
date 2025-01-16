@@ -10,6 +10,7 @@ org/example/inference/InferenceHandler.class
 org/example/rdf/PokemonRDFGenerator.class
 org/example/App.class
 org/example/validation/PokemonShapes.class
+org/example/client/DataCollectionCoordinator.class
 org/example/server/SPARQLHandler.class
 org/example/rdf/PokemonRDFConverter.class
 org/example/server/EndpointTester.class

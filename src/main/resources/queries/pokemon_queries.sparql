@@ -150,3 +150,62 @@ WHERE {
   FILTER(?sharedProperty != schema:name)
 }
 ORDER BY ?name1 ?name2
+
+# Query 11: Query to validate data completeness
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX pokemon: <http://example.org/pokemon/>
+PREFIX schema: <http://schema.org/>
+
+SELECT (COUNT(DISTINCT ?pokemon) as ?totalPokemon)
+WHERE {
+  ?pokemon rdf:type pokemon:Pokemon .
+}
+
+# Query 12: Query to verify external links
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX schema: <http://schema.org/>
+
+SELECT ?name ?dbpedia ?wikidata
+WHERE {
+  ?pokemon schema:name ?name .
+  OPTIONAL { ?pokemon owl:sameAs ?dbpedia .
+    FILTER(CONTAINS(STR(?dbpedia), "dbpedia.org")) }
+  OPTIONAL { ?pokemon owl:sameAs ?wikidata .
+    FILTER(CONTAINS(STR(?wikidata), "wikidata.org")) }
+}
+ORDER BY ?name
+
+# Query 13: Query to check multilingual labels
+PREFIX schema: <http://schema.org/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?name (GROUP_CONCAT(DISTINCT ?label;separator="|") as ?labels)
+WHERE {
+  ?pokemon schema:name ?name ;
+           rdfs:label ?label .
+}
+GROUP BY ?name
+ORDER BY ?name
+
+# Query 14: Check for inconsistent evolution stages
+PREFIX pokemon: <http://example.org/pokemon/>
+PREFIX schema: <http://schema.org/>
+
+SELECT ?name ?stage
+WHERE {
+  ?pokemon schema:name ?name ;
+           pokemon:evolutionStage ?stage .
+  FILTER(?stage < 1 || ?stage > 3)
+}
+
+
+# Query 15: Check for Pokemon with invalid types
+PREFIX pokemon: <http://example.org/pokemon/>
+PREFIX schema: <http://schema.org/>
+
+SELECT ?name ?type
+WHERE {
+  ?pokemon schema:name ?name ;
+           pokemon:primaryType ?type .
+  FILTER(?type NOT IN ("Fire", "Water", "Grass", "Dragon"))
+}

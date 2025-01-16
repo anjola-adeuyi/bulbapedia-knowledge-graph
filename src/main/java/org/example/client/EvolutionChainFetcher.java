@@ -1,132 +1,178 @@
 package org.example.client;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
-import java.io.IOException;
-import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 public class EvolutionChainFetcher {
     private static final Logger logger = LoggerFactory.getLogger(EvolutionChainFetcher.class);
     private final BulbapediaClient client;
+    private final Map<String, String> processedPages;
+    private static final int DELAY_MS = 1000; // 1 second delay between requests
     
-    // Evolution chains for starter Pokemon
-    private static final Map<String, List<String>> EVOLUTION_CHAINS = new HashMap<>();
-    
-    static {
-        // Gen 1 starters
-        EVOLUTION_CHAINS.put("Bulbasaur", Arrays.asList(
-            "Bulbasaur_(Pokémon)",
-            "Ivysaur_(Pokémon)",
-            "Venusaur_(Pokémon)"
-        ));
-
-        // Gen 2 starters
-        EVOLUTION_CHAINS.put("Chikorita", Arrays.asList(
-            "Chikorita_(Pokémon)",
-            "Bayleef_(Pokémon)",
-            "Meganium_(Pokémon)"
-        ));
-
-        // Pseudo-legendaries
-        EVOLUTION_CHAINS.put("Dratini", Arrays.asList(
-            "Dratini_(Pokémon)",
-            "Dragonair_(Pokémon)",
-            "Dragonite_(Pokémon)"
-        ));
-
-        // Grass starters
-        EVOLUTION_CHAINS.put("Bulbasaur", Arrays.asList(
-            "Bulbasaur_(Pokémon)",
-            "Ivysaur_(Pokémon)",
-            "Venusaur_(Pokémon)"
-        ));
-
-        // Fire starters
-        EVOLUTION_CHAINS.put("Charmander", Arrays.asList(
-            "Charmander_(Pokémon)",
-            "Charmeleon_(Pokémon)",
-            "Charizard_(Pokémon)"
-        ));
-
-        // Water starters
-        EVOLUTION_CHAINS.put("Squirtle", Arrays.asList(
-            "Squirtle_(Pokémon)",
-            "Wartortle_(Pokémon)",
-            "Blastoise_(Pokémon)"
-        ));
-    }
+    // Categories to process
+    private static final List<String> POKEMON_CATEGORIES = Arrays.asList(
+        "Generation_I_Pokémon",
+        "Generation_II_Pokémon",
+        "Generation_III_Pokémon",
+        "Generation_IV_Pokémon",
+        "Generation_V_Pokémon"
+    );
 
     public EvolutionChainFetcher(BulbapediaClient client) {
         this.client = client;
+        this.processedPages = new ConcurrentHashMap<>();
     }
 
-    public List<Map<String, String>> fetchEvolutionChain() {
+    public List<Map<String, String>> fetchAllPokemon() {
         List<Map<String, String>> allPokemonData = new ArrayList<>();
         
-        for (Map.Entry<String, List<String>> entry : EVOLUTION_CHAINS.entrySet()) {
-            String starterName = entry.getKey();
-            List<String> chain = entry.getValue();
-            logger.info("Fetching evolution chain for {} starter", starterName);
-            
-            for (int i = 0; i < chain.size(); i++) {
-                String pokemonName = chain.get(i);
-                try {
-                    logger.info("Fetching data for {}", pokemonName);
-                    JSONObject response = client.getPageContent(pokemonName);
-                    
-                    // Store evolution stage in additional metadata
-                    Map<String, String> metadata = new HashMap<>();
-                    int stage = i + 1;
-                    metadata.put("evolutionStage", String.valueOf(stage));
-                    
-                    // Add evolution data
-                    if (i > 0) {
-                        String prevPokemonId = String.format("%04d", Integer.parseInt(getPokemonId(chain.get(i - 1))));
-                        metadata.put("evolvesFrom", prevPokemonId);
+        for (String category : POKEMON_CATEGORIES) {
+            try {
+                logger.info("Fetching Pokemon from category: {}", category);
+                List<String> pokemonPages = getPokemonFromCategory(category);
+                
+                for (String pokemonPage : pokemonPages) {
+                    if (processedPages.containsKey(pokemonPage)) {
+                        continue;
                     }
                     
-                    // Add the response to our list
-                    if (response.has("parse")) {
-                        JSONObject parseData = response.getJSONObject("parse");
-                        String wikitext = parseData.getJSONObject("wikitext").getString("*");
-                        metadata.put("wikitext", wikitext);
-                        metadata.put("pageid", String.valueOf(parseData.getInt("pageid")));
-                        metadata.put("title", parseData.getString("title"));
+                    try {
+                        Map<String, String> pokemonData = fetchPokemonData(pokemonPage);
+                        if (pokemonData != null && !pokemonData.isEmpty()) {
+                            allPokemonData.add(pokemonData);
+                            processedPages.put(pokemonPage, "processed");
+                        }
+                        
+                        // Add delay to avoid overwhelming the server
+                        TimeUnit.MILLISECONDS.sleep(DELAY_MS);
+                    } catch (Exception e) {
+                        logger.error("Error processing Pokemon page: {}", pokemonPage, e);
                     }
-                    
-                    allPokemonData.add(metadata);
-                    
-                } catch (IOException | InterruptedException e) {
-                    logger.error("Error fetching data for {}", pokemonName, e);
                 }
+            } catch (Exception e) {
+                logger.error("Error processing category: {}", category, e);
             }
         }
         
         return allPokemonData;
     }
 
-    private String getPokemonId(String pokemonName) {
-        // Extract Pokemon ID from the wikitext if available
-        try {
-            JSONObject response = client.getPageContent(pokemonName);
-            if (response.has("parse")) {
-                String wikitext = response.getJSONObject("parse")
-                                       .getJSONObject("wikitext")
-                                       .getString("*");
-                // Look for ndex parameter
-                int ndexStart = wikitext.indexOf("|ndex=");
-                if (ndexStart >= 0) {
-                    int start = ndexStart + 6;
-                    int end = wikitext.indexOf("\n", start);
-                    if (end > start) {
-                        return wikitext.substring(start, end).trim();
+    private List<String> getPokemonFromCategory(String category) throws IOException, InterruptedException {
+        List<String> pokemonPages = new ArrayList<>();
+        String continueFrom = null;
+        
+        do {
+            JSONObject response = client.queryCategory(category, continueFrom);
+            JSONObject query = response.getJSONObject("query");
+            
+            if (query.has("categorymembers")) {
+                JSONArray members = query.getJSONArray("categorymembers");
+                for (int i = 0; i < members.length(); i++) {
+                    JSONObject member = members.getJSONObject(i);
+                    String title = member.getString("title");
+                    if (title.endsWith("_(Pokémon)")) {
+                        pokemonPages.add(title);
                     }
                 }
             }
-        } catch (Exception e) {
-            logger.warn("Failed to get Pokemon ID from {}", pokemonName);
+            
+            // Check for continue token
+            if (response.has("continue")) {
+                continueFrom = response.getJSONObject("continue").getString("cmcontinue");
+            } else {
+                continueFrom = null;
+            }
+            
+            TimeUnit.MILLISECONDS.sleep(DELAY_MS);
+        } while (continueFrom != null);
+        
+        return pokemonPages;
+    }
+
+    private Map<String, String> fetchPokemonData(String pokemonPage) throws IOException, InterruptedException {
+        Map<String, String> pokemonData = new HashMap<>();
+        
+        JSONObject response = client.getPageContent(pokemonPage);
+        if (!response.has("parse")) {
+            return null;
         }
-        return "0000";
+        
+        JSONObject parseData = response.getJSONObject("parse");
+        String wikitext = parseData.getJSONObject("wikitext").getString("*");
+        
+        pokemonData.put("wikitext", wikitext);
+        pokemonData.put("pageid", String.valueOf(parseData.getInt("pageid")));
+        pokemonData.put("title", parseData.getString("title"));
+        
+        // Extract Pokemon number from wikitext
+        String ndex = extractNdex(wikitext);
+        if (ndex != null) {
+            pokemonData.put("ndex", ndex);
+        }
+        
+        // Extract evolution stage and chain
+        addEvolutionData(pokemonData, wikitext);
+        
+        return pokemonData;
+    }
+
+    private String extractNdex(String wikitext) {
+        // Find ndex parameter in wikitext
+        int ndexStart = wikitext.indexOf("|ndex=");
+        if (ndexStart >= 0) {
+            int start = ndexStart + 6;
+            int end = wikitext.indexOf("\n", start);
+            if (end > start) {
+                String ndex = wikitext.substring(start, end).trim();
+                // Ensure it's a valid number and pad with zeros
+                try {
+                    int number = Integer.parseInt(ndex);
+                    return String.format("%04d", number);
+                } catch (NumberFormatException e) {
+                    logger.warn("Invalid ndex value: {}", ndex);
+                }
+            }
+        }
+        return null;
+    }
+
+    private void addEvolutionData(Map<String, String> pokemonData, String wikitext) {
+        // Extract evolution data from wikitext
+        if (wikitext.contains("|evointo=")) {
+            String[] lines = wikitext.split("\n");
+            for (String line : lines) {
+                if (line.startsWith("|prevo=")) {
+                    String prevo = line.substring(7).trim();
+                    if (!prevo.isEmpty() && !prevo.equals("None")) {
+                        pokemonData.put("evolvesFrom", prevo);
+                    }
+                }
+                if (line.startsWith("|evointo=")) {
+                    String evointo = line.substring(9).trim();
+                    if (!evointo.isEmpty() && !evointo.equals("None")) {
+                        pokemonData.put("evolvesTo", evointo);
+                    }
+                }
+            }
+        }
+        
+        // Determine evolution stage
+        int stage = 1;
+        if (pokemonData.containsKey("evolvesFrom")) {
+            stage++;
+            if (wikitext.contains("|evointo=") && !wikitext.contains("|evointo=None")) {
+                stage = 2;
+            } else {
+                stage = 3;
+            }
+        }
+        pokemonData.put("evolutionStage", String.valueOf(stage));
     }
 }

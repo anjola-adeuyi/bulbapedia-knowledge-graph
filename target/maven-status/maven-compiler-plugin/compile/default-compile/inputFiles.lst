@@ -1,4 +1,5 @@
 /Users/anjolaoluwaadeuyi/Documents/CPS2/Master 2 (M2)/Semantic web/SW Project/bulbapedia-knowledge-graph/src/main/java/org/example/inference/InferenceHandler.java
+/Users/anjolaoluwaadeuyi/Documents/CPS2/Master 2 (M2)/Semantic web/SW Project/bulbapedia-knowledge-graph/src/main/java/org/example/client/DataCollectionCoordinator.java
 /Users/anjolaoluwaadeuyi/Documents/CPS2/Master 2 (M2)/Semantic web/SW Project/bulbapedia-knowledge-graph/src/main/java/org/example/client/BulbapediaClient.java
 /Users/anjolaoluwaadeuyi/Documents/CPS2/Master 2 (M2)/Semantic web/SW Project/bulbapedia-knowledge-graph/src/main/java/org/example/rdf/PokemonRDFConverter.java
 /Users/anjolaoluwaadeuyi/Documents/CPS2/Master 2 (M2)/Semantic web/SW Project/bulbapedia-knowledge-graph/src/main/java/org/example/server/SPARQLHandler.java

@@ -1,6 +1,9 @@
 package org.example.client;
 
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URLEncoder;
@@ -12,12 +15,13 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class BulbapediaClient {
+    private static final Logger logger = LoggerFactory.getLogger(BulbapediaClient.class);
     private static final String API_ENDPOINT = "https://bulbapedia.bulbagarden.net/w/api.php";
     private final HttpClient httpClient;
 
     public BulbapediaClient() {
         this.httpClient = HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(10))
+                .connectTimeout(Duration.ofSeconds(30))
                 .build();
     }
 
@@ -39,7 +43,7 @@ public class BulbapediaClient {
         Map<String, String> params = Map.of(
             "action", "parse",
             "page", pageTitle,
-            "prop", "wikitext",
+            "prop", "wikitext|categories|templates",
             "format", "json"
         );
 
@@ -53,13 +57,43 @@ public class BulbapediaClient {
         return new JSONObject(response.body());
     }
 
-    public JSONObject queryAllPages(String continueFrom) throws IOException, InterruptedException {
+    public JSONObject queryCategory(String category, String continueFrom) throws IOException, InterruptedException {
+        Map<String, String> params;
+        if (continueFrom != null) {
+            params = Map.of(
+                "action", "query",
+                "list", "categorymembers",
+                "cmtitle", "Category:" + category,
+                "cmlimit", "500",
+                "format", "json",
+                "cmcontinue", continueFrom
+            );
+        } else {
+            params = Map.of(
+                "action", "query",
+                "list", "categorymembers",
+                "cmtitle", "Category:" + category,
+                "cmlimit", "500",
+                "format", "json"
+            );
+        }
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(buildUrl(params)))
+                .header("User-Agent", "BulbapediaKGBot/1.0 (pokemon.kg@example.com)")
+                .GET()
+                .build();
+
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        return new JSONObject(response.body());
+    }
+
+    public JSONObject searchPages(String query) throws IOException, InterruptedException {
         Map<String, String> params = Map.of(
             "action", "query",
-            "list", "allpages",
-            "aplimit", "500",
-            "format", "json",
-            "apcontinue", continueFrom != null ? continueFrom : ""
+            "list", "search",
+            "srsearch", query,
+            "format", "json"
         );
 
         HttpRequest request = HttpRequest.newBuilder()
@@ -72,7 +106,21 @@ public class BulbapediaClient {
         return new JSONObject(response.body());
     }
 
-    public JSONObject getInfobox(String pageTitle) throws IOException, InterruptedException {
-        return getPageContent(pageTitle);
+    public JSONObject getTemplates(String pageTitle) throws IOException, InterruptedException {
+        Map<String, String> params = Map.of(
+            "action", "parse",
+            "page", pageTitle,
+            "prop", "templates",
+            "format", "json"
+        );
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(buildUrl(params)))
+                .header("User-Agent", "BulbapediaKGBot/1.0 (pokemon.kg@example.com)")
+                .GET()
+                .build();
+
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        return new JSONObject(response.body());
     }
 }

@@ -3,10 +3,9 @@ package org.example;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.example.client.BulbapediaClient;
-import org.example.client.EvolutionChainFetcher;
+import org.example.client.DataCollectionCoordinator;
 import org.example.linking.ExternalLinker;
 import org.example.parser.MultilingualDataHandler;
-import org.example.parser.WikiInfoboxParser;
 import org.example.rdf.PokemonRDFConverter;
 import org.example.server.PokemonFusekiServer;
 import org.example.server.LinkedDataServer;
@@ -26,30 +25,21 @@ public class App {
         try {
             // Initialize components
             BulbapediaClient client = new BulbapediaClient();
-            WikiInfoboxParser parser = new WikiInfoboxParser();
             PokemonRDFConverter converter = new PokemonRDFConverter();
-            EvolutionChainFetcher fetcher = new EvolutionChainFetcher(client);
             
             // Create a combined model for all Pokemon
             Model combinedModel = ModelFactory.createDefaultModel();
-            
-            // Fetch the entire evolution chain
-            logger.info("Fetching evolution chain data...");
-            List<Map<String, String>> evolutionChainData = fetcher.fetchEvolutionChain();
-            
-            // Process each Pokemon in the chain
-            for (Map<String, String> pokemonData : evolutionChainData) {
+
+            DataCollectionCoordinator coordinator = new DataCollectionCoordinator();
+            List<Map<String, String>> allPokemonData = coordinator.collectAllData();
+
+            // Process the collected data
+            for (Map<String, String> pokemonData : allPokemonData) {
                 try {
-                    Map<String, String> pokemonInfo = parser.processWikitext(pokemonData);
-                    if (pokemonInfo != null && !pokemonInfo.isEmpty()) {
-                        logger.debug("Processing Pokemon: {}", pokemonInfo.get("name"));
-                        Model pokemonModel = converter.convertToRDF(pokemonInfo);
-                        combinedModel.add(pokemonModel);  // Accumulate models
-                    } else {
-                        logger.warn("Failed to process Pokemon data: {}", pokemonData.get("title"));
-                    }
+                    Model pokemonModel = converter.convertToRDF(pokemonData);
+                    combinedModel.add(pokemonModel);
                 } catch (Exception e) {
-                    logger.error("Error processing Pokemon: {}", pokemonData.get("title"), e);
+                    logger.error("Error processing Pokemon data: {}", pokemonData.get("title"), e);
                 }
             }
 
